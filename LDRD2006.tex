@@ -1,24 +1,45 @@
 \documentclass[pdf,12pt,report,strict]{SANDreport}
 
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{varioref}
+\usepackage{fancyvrb}
+\usepackage{cite}
 \usepackage{subfigure}
+\usepackage{xspace}
+\usepackage{hyperref}
+
+%-----------------------------------------------------------------------------
+% My commands
+%
+\newcommand*{\lcite}[1]{~\cite{#1}}
+\newcommand*{\scite}[1]{~\cite{#1}}
+\newcommand{\titan}{Titan}
+\newcommand{\threatview}{ThreatView\texttrademark\xspace}
 
 % ---------------------------------------------------------------------------- %
 % Set the title, author, and date
 %
 \title{Massive Graph Visualization}
-\author{Kenneth Dean Moreland\\
+\author{Dr. Kenneth D. Moreland, SMTS\\
 Scalable Analytics \& Visualization\\
 P.O. Box 5800\\
-Albuquerque, NM 87185-1176}		% Use First, Middle, Initial
+Albuquerque, NM 87185-1323\\
+\\
+Brian N. Wylie, PMTS\\
+Scalable Analytics \& Visualization\\
+P.O. Box 5800\\
+Albuquerque, NM 87185-1323}
 \date{}					% Leave this here but empty
 
 
 % ---------------------------------------------------------------------------- %
 % These are mandatory
 %
-\SANDnum{SAND2006-XXXXP}		% e.g. \SANDnum{SAND2006-0420}
+\SANDnum{SAND 2007-XXXX}			% e.g. \SANDnum{SAND2006-0420}
 \SANDprintDate{}
-\SANDauthor{Kenneth Moreland}		% One line, separated by commas
+\SANDauthor{Kenneth~Moreland and Brian~Wylie}	% One line, separated by commas
 
 
 % ---------------------------------------------------------------------------- %
@@ -52,6 +73,23 @@ Albuquerque, NM 87185-1176}		% Use First, Middle, Initial
 % An Abstract is required for SAND reports
 % 
 \begin{abstract}
+  Graphs are a vital way of organizing data with complex correlations. A
+  good visualization of a graph can fundamentally change human
+  understanding of the data. Consequently, there is a rich body of work on
+  graph visualization.  Although there are many techniques that are
+  effective on small to medium sized graphs (tens of thousands of nodes),
+  there is a void in the research for visualizing massive graphs containing
+  millions of nodes. Sandia is one of the few entities in the world that
+  has the means and motivation to handle data on such a massive scale. For
+  example, homeland security generates graphs from prolific media sources
+  such as television, telephone, and the Internet.  The purpose of this
+  project is to provide the groundwork for visualizing such massive graphs.
+  The research provides for two major feature gaps: a parallel, interactive
+  visualization framework and scalable algorithms to make the framework
+  usable to a practical application.  Both the frameworks and algorithms
+  are designed to run on distributed parallel computers, which are already
+  available at Sandia.  Future work will integrate these features into the
+  \threatview application.
 \end{abstract}
 
 
@@ -61,6 +99,14 @@ Albuquerque, NM 87185-1176}		% Use First, Middle, Initial
 \clearpage
 \chapter*{Acknowledgment}
 
+The Massive Graph Visualization LDRD team would like to acknowledge the
+significant support provided by Nabeel Rahal, our LDRD program manager.
+Without Nabeel's fanatical support, our work may never have left the
+ground.  We would like to acknowledge those who provided both direct
+and indirect technical development: Timothy Shead and Jeffrey Baumes.  We
+also acknowledge Bruce Hendrickson, Jonathan Berry, and Patricia Crossno
+for their technical guidance.
+
 
 % ------------------------------------------------------------------------ %
 % The table of contents and list of figures and tables
@@ -68,36 +114,36 @@ Albuquerque, NM 87185-1176}		% Use First, Middle, Initial
 \cleardoublepage		% TOC needs to start on an odd page
 \tableofcontents
 \listoffigures
-\listoftables
+%\listoftables
 
 
-% ---------------------------------------------------------------------- %
-% An optional preface or Foreword
-\clearpage
-\chapter*{Preface}
-\addcontentsline{toc}{chapter}{Preface}
+%% % ---------------------------------------------------------------------- %
+%% % An optional preface or Foreword
+%% \clearpage
+%% \chapter*{Preface}
+%% \addcontentsline{toc}{chapter}{Preface}
 
 
 % ---------------------------------------------------------------------- %
 % An optional executive summary
-\clearpage
+\cleardoublepage		% Executive Summary to start on odd page
 \chapter*{Executive Summary}
 \addcontentsline{toc}{chapter}{Executive Summary}
 
 
-% ---------------------------------------------------------------------- %
-% An optional glossary. We don't want it to be numbered
-\clearpage
-\chapter*{Nomenclature}
-\addcontentsline{toc}{chapter}{Nomenclature}
-\begin{description}
-\item[Term 1]
-  Description
-\item[Term 2]
-  Description
-\item[Term 3]
-  Description
-\end{description}
+%% % ---------------------------------------------------------------------- %
+%% % An optional glossary. We don't want it to be numbered
+%% \clearpage
+%% \chapter*{Nomenclature}
+%% \addcontentsline{toc}{chapter}{Nomenclature}
+%% \begin{description}
+%% \item[Term 1]
+%%   Description
+%% \item[Term 2]
+%%   Description
+%% \item[Term 3]
+%%   Description
+%% \end{description}
 
 
 % ---------------------------------------------------------------------- %
@@ -105,31 +151,87 @@ Albuquerque, NM 87185-1176}		% Use First, Middle, Initial
 % 
 \SANDmain		% Start the main part of the report
 
-\chapter{Introduction}\label{Intro}
+\chapter{Introduction}
+\label{chap:Introduction}
 
-\begin{table}[ht]
-  \centering
-  \caption[Short Title]{Full caption}
-  \bigskip
+\section{Related Projects}
+\label{sec:RelatedProjects}
 
-  \begin{tabular}{|l|c|l|c|}
-  \end{tabular}
-  \label{tab:1}
-\end{table}
+\subsection{\titan}
+\label{sec:RelatedProjects:Titan}
 
-\begin{figure}[ht]
-  \centering
-  \subfigure[Short title]{
-    \label{fig:sub:1}
-%    \includegraphics[keepaspectratio=true, width= in]{filename}
-  }
-  \subfigure[Short title]{
-    \label{fig:sub:2}
-%    \includegraphics[keepaspectratio=true, width= in]{filename}
-  }
-  \caption{Full caption.}
-  \label{fig:1}
-\end{figure}
+\subsection{\threatview}
+\label{sec:RelatedProjects:ThreatView}
+
+\subsection{Multi-Threaded Graph Library}
+\label{sec:RelatedProjects:MTGL}
+
+\subsection{VxOrd}
+\label{sec:RelatedProjects:VxOrd}
+
+Structure of science stuff\lcite{Boyak04,Boyak05}.
+
+
+\chapter{Parallel Graph Visualization Framework}
+\label{sec:ParallelGraphVisualizationFramework}
+
+\section{Data Structures}
+\label{sec:ParallelGraphVisualizationFramework:DataStructures}
+
+2D edge partitioning\lcite{Yoo05} is cool.
+
+\section{Reading and Querying}
+\label{sec:ParallelGraphVisualizationFramework:ReadingAndQuerying}
+
+
+\chapter{Parallel Graph Visualization Algorithms}
+\label{chap:ParallelGraphVisualizationAlgorithms}
+
+\section{Layout}
+\label{sec:ParallelGraphVisualizationAlgorithms:Layout}
+
+\subsection{Fast Layout}
+\label{sec:ParallelGraphVisualizationAlgorithms:Layout:FastLayout}
+
+\subsection{G-Space}
+\label{sec:ParallelGraphVisualizationAlgorithms:Layout:GSpace}
+
+\section{Edge Lighting}
+\label{sec:ParallelGraphVisualizationAlgorithms:EdgeLighting}
+
+\section{Landscape View}
+\label{sec:ParallelGraphVisualizationAlgorithms:LandscapeView}
+
+
+\chapter{Future Work}
+\label{chap:FutureWork}
+
+
+%% \chapter{Junk}
+
+%% \begin{table}[ht]
+%%   \centering
+%%   \caption[Short Title]{Full caption}
+%%   \bigskip
+
+%%   \begin{tabular}{|l|c|l|c|}
+%%   \end{tabular}
+%%   \label{tab:1}
+%% \end{table}
+
+%% \begin{figure}[ht]
+%%   \centering
+%%   \subfigure[Short title]{
+%%     \label{fig:sub:1}
+%% %    \includegraphics[keepaspectratio=true, width= in]{filename}
+%%   }
+%%   \subfigure[Short title]{
+%%     \label{fig:sub:2}
+%% %    \includegraphics[keepaspectratio=true, width= in]{filename}
+%%   }
+%%   \caption{Full caption.}
+%%   \label{fig:1}
+%% \end{figure}
 
 
 
@@ -143,13 +245,13 @@ Albuquerque, NM 87185-1176}		% Use First, Middle, Initial
 \phantomsection
 \addcontentsline{toc}{chapter}{References}
 \bibliographystyle{plain}
-\bibliography{}
+\bibliography{LDRD2006}
 
 
-% ---------------------------------------------------------------------- %
-% 
-\appendix
-\chapter{}
+%% % ---------------------------------------------------------------------- %
+%% % 
+%% \appendix
+%% \chapter{}
 
 % \printindex
 
