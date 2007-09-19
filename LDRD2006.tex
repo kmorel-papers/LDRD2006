@@ -5,6 +5,7 @@
 \usepackage{graphicx}
 \usepackage{varioref}
 \usepackage{fancyvrb}
+\usepackage{float}
 \usepackage{cite}
 \usepackage{subfigure}
 \usepackage{xspace}
@@ -17,6 +18,23 @@
 \newcommand*{\scite}[1]{~\cite{#1}}
 \newcommand{\titan}{Titan}
 \newcommand{\threatview}{ThreatView\texttrademark\xspace}
+
+%-----------------------------------------------------------------------------
+% My options
+%
+
+% Put figures inline with text when possible.
+\floatplacement{figure}{htb}
+
+% Avoid putting figures on their own page.
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\topfraction}{0.95}
+
+% Make sure this is big enough so that only big figures end up on their own
+% page but small enough so that if a figure does have to be on its own
+% page, it won't push everything to the bottom because it's not big enough
+% to have its own page.
+\renewcommand{\floatpagefraction}{.75}
 
 % ---------------------------------------------------------------------------- %
 % Set the title, author, and date
@@ -129,6 +147,44 @@ for their technical guidance.
 \cleardoublepage		% Executive Summary to start on odd page
 \chapter*{Executive Summary}
 \addcontentsline{toc}{chapter}{Executive Summary}
+
+The purpose of the project is to develop techniques that enable
+understanding of large databases of connected data.  Such databases
+naturally form mathematical structures called graphs.  Graphs are a vital
+way of organizing data with complex correlations.  A good visualization of
+a graph can fundamentally change human understanding of the data.
+Consequently, there is a rich body of work on graph visualization.
+
+Although there are many techniques that are effective on small to medium
+sized graphs (tens of thousands of nodes), there is a void in the research
+for visualizing massive graphs containing millions of nodes.  Sandia is one
+of the few entities in the world that has the means and motivation to
+handle data on such a massive scale.  For example, homeland security
+generates graphs from prolific media sources such as television, telephone,
+and the Internet.
+
+\begin{figure}
+  \centering
+  (Data~Collection) $\rightarrow$ (Entity~Extraction)
+  (Event~Similarity~Calculation) (Semantic~Analysis) $\rightarrow$
+  (Database)
+  \\
+  See the original proposal slides for the basic idea.
+  \caption{Graph extraction from raw data.}
+  \label{fig:GraphExtraction}
+\end{figure}
+
+As demonstrated in Figure~\ref{fig:GraphExtraction}, the graphs with which
+homeland security must work originate with raw data collected from a
+variety of sources.  Data sources of the modern world are far too prolific
+to sift through ``by hand.''  Instead, the data is first conditioned by any
+number of automated processes such as entity extraction, event similarity
+calculation, and semantic analysis.  The result is a set of entities that
+are stored in a database in such a way that relationships are easily
+retrieved or extracted.  These relations between entities in the database
+fundamentally form a graph.  The large size of the input data collection
+yields a similarly large graph database; millions of nodes are not
+uncommon.
 
 
 %% % ---------------------------------------------------------------------- %
