@@ -358,6 +358,43 @@ algorithm we created has to work very fast to maintain interactivity.
 \chapter{Introduction}
 \label{chap:Introduction}
 
+The focus of this LDRD was to research the foundations for interactively
+analyzing massive graphs.  This problem domain is of particular importance
+to homeland security where data accumulated from a variety of independent
+sources can quickly form these enormous graphs.  Interactively visualizing
+these graphs is vital for detecting threats.
+
+\begin{figure}
+  \centering
+  In a loop \\
+  (Hypothesize) $\rightarrow$ (Query) $\rightarrow$ (Investigate)
+  $\rightarrow$ (Conjecture) $\rightarrow$ (Hypothesize)
+  \\
+  Maybe no conjecture part.
+  \caption{Threat Investigation Cycle.}
+  \label{fig:ThreatInvestigationCycle}
+\end{figure}
+
+Figure~\ref{fig:ThreatInvestigationCycle} shows the cyclical investigation
+of threats (a simplification of the
+\index{analytical~reasoning~process}\keyterm{analytical reasoning
+process}\cite{Thomas05}).  An annalist makes a hypothesis and based on this
+hypothesis queries the data for relevant information.  The annalist then
+investigates and explores this data.  Based on this investigation,
+conjectures are drawn and the hypothesis is modified in accordance to the
+new information.  The cycle is repeated with more queries to draw more data
+about the new information.
+
+Clearly this investigative process relies heavily on the ability to not
+only manage this data but to also sift through it quickly.  Several
+products have been created to this end\lcite{Hetzler98,Thomas99,Boyack01},
+but to date they all are serial applications.  They can handle data of only
+a limited scale and are not equipped to deal with graphs on the order of
+millions of vertices.  Making the leap to a parallel framework for massive
+amounts of data requires the foundational research this LDRD project
+provides.
+
+
 \section{Related Projects}
 \label{sec:RelatedProjects}
 
@@ -396,7 +433,7 @@ algorithm we created has to work very fast to maintain interactivity.
 
 \index{VxOrd|(}
 
-Structure of science stuff\lcite{Boyak04,Boyak05}.
+Structure of science stuff\lcite{Boyack04,Boyack05}.
 
 \index{VxOrd|)}
 
