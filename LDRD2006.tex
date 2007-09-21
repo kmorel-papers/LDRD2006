@@ -6,6 +6,7 @@
 \usepackage{varioref}
 \usepackage{fancyvrb}
 \usepackage{float}
+\usepackage{makeidx}
 \usepackage{cite}
 \usepackage{subfigure}
 \usepackage{xspace}
@@ -18,6 +19,8 @@
 \newcommand*{\scite}[1]{~\cite{#1}}
 \newcommand{\titan}{Titan}
 \newcommand{\threatview}{ThreatView\texttrademark\xspace}
+
+\newcommand*{\keyterm}[1]{\textbf{#1}}
 
 %-----------------------------------------------------------------------------
 % My options
@@ -35,6 +38,10 @@
 % page, it won't push everything to the bottom because it's not big enough
 % to have its own page.
 \renewcommand{\floatpagefraction}{.75}
+
+\newcommand{\sticky}[1]{\textsc{[#1]}}
+
+\makeindex
 
 % ---------------------------------------------------------------------------- %
 % Set the title, author, and date
@@ -186,6 +193,147 @@ fundamentally form a graph.  The large size of the input data collection
 yields a similarly large graph database; millions of nodes are not
 uncommon.
 
+The goal of this project is to facilitate the visualization of such massive
+graphs.  We have identified to major fronts of basic research that are
+required for practical visual applications: a parallel, interactive
+visualization framework and scalable algorithms to make the framework
+usable to a practical application.  On both fronts we work with the
+constraint that the algorithms must perform well on a distributed memory
+parallel machine because of their proven scalability and accessibility
+from within Sandia.
+
+\section{Framework}
+
+To build a framework on which to visualize massive graphs, we start with an
+already well developed code base.  The field from which we draw from is
+\index{scientific~visualization}\keyterm{scientific visualization}.
+Scientific visualization concerns the visualization of meshes, simulation
+results, and real-world sensor readings, all of which have a definition in
+physical space.  As a world leader in supercomputing for physical
+simulation, Sandia has also fostered excellence in scalable parallel
+scientific visualization.
+
+\index{Visualization Toolkit|see{VTK}}
+
+The framework that Sandia uses to perform scientific visualization is
+embedded in \index{VTK}\keyterm{VTK}, the Visualization Toolkit.  VTK
+provides a component architecture for visualization components that also
+provides for data-centric parallel processing.  Built on top of VTK is
+\index{ParaView}\keyterm{ParaView}, which provides both a client/server
+architecture for parallel interactive visualizations and an end user
+application for performing parallel visualizations.
+
+Graph visualization falls under the classification of
+\index{information~visualization}\keyterm{information visualization}, which
+deals with abstract data types that have no necessary connection to
+physical space.  ParaView, designed as a scientific visualization tool, is
+not equipped to handle this type of visualization.  However, the distinction
+between scientific visualization and information visualization is in many
+ways artificial.  Many problems in one domain are mirrored in the other.
+
+To leverage many of the features of VTK, including scalable parallel
+processing, we started the \index{Titan@\titan}\keyterm{\titan} project.
+The \titan project organizes the work of several funding sources (this LDRD
+included) to complement VTK with information visualization capabilities.
+
+\index{graph~partitioning!vertex}
+\index{graph~partitioning!edge}
+
+The role of this project in \titan is the creation of scalable graph
+components.  To accommodate parallel graph structures in a variety of
+settings, we built data sets that support both vertex and edge
+partitioning, as defined by Yoo and colleagues\scite{Yoo05}. \sticky{Can
+  you convert (or, more specifically, repartition)?}  These partitioning
+structures allow you to divide the graph data amongst distributed processes
+and identify where neighboring vertices are located, the bare minimum for
+supporting parallel graphs, In addition, edge partitioning also limits the
+amount of communication needed to get neighborhood information and to trace
+connections within graphs.  This feature can drastically reduce the
+communication overhead in algorithms.
+
+The ability to store large graphs in parallel is pointless unless one can
+load in data, so our project addressed this as well.  Once data is
+processed it is most appropriate to store the entity information in a
+database.  Databases are a very well developed technology that provide for
+the storage, retrieval and search of large amounts of data.  Although an
+active area of research, databases are currently not designed specifically
+for graph storage and retrieval.  Most databases store tables of relational
+data (although some object-oriented databases exist), and retrievals from
+the database are assumed to be tables that are streamed to a single client.
+
+To read in large graphs from databases, we addressed two important issues.
+First, we read data from the database in a parallel distributed manner.  We
+do this by first instructing the database to save a query in an internal
+structure, and then we stream partitions of the table in each process.
+Second, we convert the tables into graphs by identifying vertices and
+redistributing edges as necessary \sticky{Check accuracy of that.}
+
+\section{Algorithms}
+
+\index{force-directed~layout|see{graph layout, force directed}}
+
+With the framework in place to handle large, parallel graphs, we addressed
+the basic algorithms necessary for visualization.  One critical class of
+such algorithms are the layout algorithms that impose spatial coordinates
+on the graph elements such that their placement suggests the relationships
+of the entities.  The most common layout algorithms are
+\index{graph~layout!force~directed}\keyterm{force directed}, which places
+vertices by minimizing the energy caused by attractive and repulsive
+forces defined by the graph structure.  The time to solve this problem
+completely grows quadratically with respect to the number of graph nodes.
+Good approximations with better running times exist~\lcite{Hachul04}, but
+they are difficult to parallelize efficiently and still have a greater than
+linear running time.
+
+\index{graph~layout!fast|see{fast layout}}
+
+We investigated alternative layout algorithms that have a running time that
+grows linearly with respect to the number of vertices and edges in the
+graph and that can easily be run in parallel.  The first such algorithm,
+called simply \index{fast~layout}\keyterm{fast layout}, is a relatively
+simple extension to the traditional force directed algorithm.  This
+algorithm follows the same basic flow except that the force field is
+computed on a finite mesh.  This sampled field can be computed in linear
+time with respect to the vertices and can be combined in parallel with a
+simple reduce command.
+
+\index{graph~layout!G-Space|see{G-Space}}
+
+The second layout algorithm we designed is the
+\index{G-Space}\keyterm{G-Space} layout algorithm.  This algorithm differs
+significantly from the traditional force-directed layout algorithm.  The
+G-Space algorithm first picks two vertices in the graph and performs a
+breadth-first search on each to determine the geodesic distance of each
+vertex to these two.  These two values form coordinates in a 2D geodesic
+space.  The G-Space layout is then based on the plot of the vertices in
+geodesic space.
+
+Other algorithms deal with rendering and viewing graphs.  The problem with
+viewing large graphs, even those with a good layout, is that the image
+quickly becomes saturated.  It can be the case that there are more elements
+being rendered than pixels on the screen.  To address this problem, we can
+render the elements with the assumption that each is smaller than a screen
+pixel.  The fragments then accumulate to show collections of objects.
+Although done in the past, we found that the technique, although effective
+for vertices, was not subtable for edges.  In response to this, we designed
+an algorithm that accumulates edges based on their position and orientation
+to get a better idea of when edges bundle together.
+
+Another way to view a large graph is to use a landscape representative of
+the density of vertices.  We first derive a sampled field based on the
+density of vertices, and then perform a carpet plot of that field.  This
+process must be very fast, as it is expected to be updated as we interact
+with (pan and zoom) the graph.  We perform this operation using a special
+fast splatting algorithm in combination with parallel compositing
+techniques.
+
+Once a landscape view is available, it is important to be able to identify
+where vertices are.  Given little \emph{a-priori} knowledge, the most
+useful information you can give is to identify major clusters.  You can do
+that by identifying the peaks in the vertex density field and then placing
+an identifying label of a representative vertex there.  Again, the
+algorithm we created has to work very fast to maintain interactivity.
+
 
 %% % ---------------------------------------------------------------------- %
 %% % An optional glossary. We don't want it to be numbered
@@ -216,16 +364,41 @@ uncommon.
 \subsection{\titan}
 \label{sec:RelatedProjects:Titan}
 
+\index{Titan@\titan|(}
+
+\index{Titan@\titan|)}
+
 \subsection{\threatview}
 \label{sec:RelatedProjects:ThreatView}
+
+\index{ThreatView@\threatview|(}
+
+\index{ThreatView@\threatview|)}
 
 \subsection{Multi-Threaded Graph Library}
 \label{sec:RelatedProjects:MTGL}
 
+\index{Multi-Threaded~Graph~Library|(}
+\index{MTGL|see{Multi-Threaded Graph Library}}
+
+\index{Multi-Threaded~Graph~Library|)}
+
+\subsection{Parallel Boost Graphics Library}
+\label{sec:RelatedProjects:PBGL}
+
+\index{Parallel~Boost~Graphics~Library|(}
+\index{PBGL|see{Parallel Boost Graphics Library}}
+
+\index{Parallel~Boost~Graphics~Library|)}
+
 \subsection{VxOrd}
 \label{sec:RelatedProjects:VxOrd}
 
+\index{VxOrd|(}
+
 Structure of science stuff\lcite{Boyak04,Boyak05}.
+
+\index{VxOrd|)}
 
 
 \chapter{Parallel Graph Visualization Framework}
@@ -234,7 +407,19 @@ Structure of science stuff\lcite{Boyak04,Boyak05}.
 \section{Data Structures}
 \label{sec:ParallelGraphVisualizationFramework:DataStructures}
 
+\index{graph~partitioning!edge|(}
+\index{graph~partitioning!2D|see{graph partitioning, edge}}
+\index{edge~partitioning|see{graph partitioning, edge}}
+\index{2D~partitioning|see{graph partitioning, edge}}
+
+\index{graph~partitioning!vertex}
+\index{graph~partitioning!1D|see{graph partitioning, vertex}}
+\index{vertex~partitioning|see{graph partitioning, vertex}}
+\index{1D~partitioning|see{graph partitioning, vertex}}
+
 2D edge partitioning\lcite{Yoo05} is cool.
+
+\index{graph~partitioning!edge|)}
 
 \section{Reading and Querying}
 \label{sec:ParallelGraphVisualizationFramework:ReadingAndQuerying}
@@ -244,19 +429,22 @@ Structure of science stuff\lcite{Boyak04,Boyak05}.
 \label{chap:ParallelGraphVisualizationAlgorithms}
 
 \section{Layout}
-\label{sec:ParallelGraphVisualizationAlgorithms:Layout}
+\label{sec:Layout}
 
 \subsection{Fast Layout}
-\label{sec:ParallelGraphVisualizationAlgorithms:Layout:FastLayout}
+\label{sec:Layout:FastLayout}
 
 \subsection{G-Space}
-\label{sec:ParallelGraphVisualizationAlgorithms:Layout:GSpace}
+\label{sec:Layout:GSpace}
 
-\section{Edge Lighting}
-\label{sec:ParallelGraphVisualizationAlgorithms:EdgeLighting}
+\section{Edge Accumulation}
+\label{sec:EdgeAccumulation}
 
 \section{Landscape View}
-\label{sec:ParallelGraphVisualizationAlgorithms:LandscapeView}
+\label{sec:LandscapeView}
+
+\section{Peak Identification and Labeling}
+\label{sec:PeakIdentificationAndLabeling}
 
 
 \chapter{Future Work}
@@ -294,7 +482,7 @@ Structure of science stuff\lcite{Boyak04,Boyak05}.
 % ---------------------------------------------------------------------- %
 % References
 % 
-\clearpage
+\cleardoublepage
 % If hyperref is included, then \phantomsection is already defined.
 % If not, we need to define it.
 \providecommand*{\phantomsection}{}
@@ -309,7 +497,9 @@ Structure of science stuff\lcite{Boyak04,Boyak05}.
 %% \appendix
 %% \chapter{}
 
-% \printindex
+\clearpage
+\addcontentsline{toc}{chapter}{\indexname}
+\printindex
 
 \begin{SANDdistribution}[NM]% or [CA]
   % \SANDdistCRADA	% If this report is about CRADA work
