@@ -17,7 +17,7 @@
 %
 \newcommand*{\lcite}[1]{~\cite{#1}}
 \newcommand*{\scite}[1]{~\cite{#1}}
-\newcommand{\titan}{Titan}
+\newcommand{\titan}{Titan\xspace}
 \newcommand{\threatview}{ThreatView\texttrademark\xspace}
 
 \newcommand*{\keyterm}[1]{\textbf{#1}}
@@ -242,7 +242,7 @@ included) to complement VTK with information visualization capabilities.
 The role of this project in \titan is the creation of scalable graph
 components.  To accommodate parallel graph structures in a variety of
 settings, we built data sets that support both vertex and edge
-partitioning, as defined by Yoo and colleagues\scite{Yoo05}. \sticky{Can
+partitioning, as defined by Yoo et al.\scite{Yoo05}. \sticky{Can
   you convert (or, more specifically, repartition)?}  These partitioning
 structures allow you to divide the graph data amongst distributed processes
 and identify where neighboring vertices are located, the bare minimum for
@@ -394,14 +394,45 @@ millions of vertices.  Making the leap to a parallel framework for massive
 amounts of data requires the foundational research this LDRD project
 provides.
 
+To build scalable graph visualization applications, we first need a
+framework on which to build them.  This framework must have the ability to
+read, store, and process graphs.  Furthermore, this framework needs to work
+well on distributed-memory parallel computers, which are the most easily
+scaled and  are already available from within Sandia.  The parallel graph
+framework is discussed in
+Chapter~\ref{chap:ParallelGraphVisualizationFramework}.
+
+A parallel framework is usable only if we have parallel algorithms to run
+on it.  This LDRD project developed some basic parallel graph algorithms
+that are fundamental to the visualization of these large graphs.  The
+algorithms are discussed in
+Chapter~\ref{chap:ParallelGraphVisualizationAlgorithms}.
 
 \section{Related Projects}
 \label{sec:RelatedProjects}
+
+This LDRD project is not the only work at Sandia focused on parallel graph
+algorithms and large graph visualization.  There are several other projects
+in this domain.  Yet each project contributes to a different part of the
+solution, and the collective effort is meant to be collaborative rather
+than competitive.
 
 \subsection{\titan}
 \label{sec:RelatedProjects:Titan}
 
 \index{Titan@\titan|(}
+
+The \titan project is a coordination of several other projects, this LDRD
+included, to merge \index{scientific~visualization}scientific visualization
+and \index{information~visualization}information visualization into the
+same toolkit: \index{VTK}VTK.  The purpose of \titan is to leverage the
+enormous body of work in scientific visualization and jumpstart Sandia's
+presence in the information visualization domain.  VTK is mature
+open-source tool with a large user base that can contribute back to our
+information visualization tools.
+
+This LDRD project provides the necessary tools to make \titan scale to
+large, parallel, distributed-memory computers.
 
 \index{Titan@\titan|)}
 
@@ -409,6 +440,20 @@ provides.
 \label{sec:RelatedProjects:ThreatView}
 
 \index{ThreatView@\threatview|(}
+
+\index{NGIC|see{National Ground Intelligence Center}}
+
+\threatview is an end user information visualization tool paid for by the
+\index{PATTON}PATTON program under the
+\index{National~Ground~Intelligence~Center}National Ground Intelligence
+Center (NGIC).  \threatview leverages and contributes to \titan for a
+modular and extensible architecture.
+
+\threatview also leverages the \index{ParaView}ParaView server libraries
+for the ability to interactively run parallel algorithms in client-server
+mode.  However, the funding does not include the parallel framework and
+algorithms also required for parallel processing.  Instead, \threatview
+expects to leverage contributions from other projects (i.e. this LDRD).
 
 \index{ThreatView@\threatview|)}
 
@@ -418,28 +463,68 @@ provides.
 \index{Multi-Threaded~Graph~Library|(}
 \index{MTGL|see{Multi-Threaded Graph Library}}
 
+The Multi-Threaded Graph Library (MTGL) is a compendium of parallel graph
+algorithms.  The algorithm design is focused on a special class of computer
+architecture called massive multithreading.  This architecture has special
+hardware to enable each processor to efficiently handle many threads
+running memory-access intensive algorithms.  For algorithms that require
+repetitive memory requests, which many graph algorithms do, this type of
+architecture can be more effective than much larger distributed memory
+machines\lcite{Berry07}.
+
+When massive multithreading architectures are available, MTGL can give a
+significant performance boost.  Thus, MTGL is being integrated into \titan.
+However, massive multithreading computers are rare and expensive.  This
+LDRD designed algorithms for the more common distributed-memory machines.
+We worked with the knowledge that the architecture has limitations and that
+we have to perform with the constraints that we are given.
+
 \index{Multi-Threaded~Graph~Library|)}
 
-\subsection{Parallel Boost Graphics Library}
+\subsection{Parallel Boost Graph Library}
 \label{sec:RelatedProjects:PBGL}
 
-\index{Parallel~Boost~Graphics~Library|(}
-\index{PBGL|see{Parallel Boost Graphics Library}}
+\index{Parallel~Boost~Graph~Library|(}
+\index{PBGL|see{Parallel Boost Graph Library}}
 
-\index{Parallel~Boost~Graphics~Library|)}
+The Parallel Boost Graph Library (PBGL), developed at Indiana University,
+is an extension of the popular Boost Graph Library (BGL) to form parallel
+processing of graphs, possibly on distributed-memory
+computers\lcite{Gregor05}.
+
+BGL is integrated into \titan and PBGL will soon follow.  However, PBGL, a
+library strictly concerned with graph algorithms, is missing the framework
+and many algorithms required for interactive parallel visualization.  This
+LDRD has not duplicated the work of PBGL, but rather fills gaps needed to
+interactively visualize massive graphs.
+
+\index{Parallel~Boost~Graph~Library|)}
 
 \subsection{VxOrd}
 \label{sec:RelatedProjects:VxOrd}
 
 \index{VxOrd|(}
 
-Structure of science stuff\lcite{Boyack04,Boyack05}.
+VxOrd is a graph layout algorithm that has been developed and tweaked over
+many years at Sandia.  Most recently, the VxOrd algorithm has been used in
+conjunction with graph coarsening techniques to generate structure from
+very large real-world graphs.
+
+The technique is an iterative serial process that takes many hours to
+complete on large graphs.  The results can generate stunning visualizations
+such as those demonstrating the structure of
+science\lcite{Boyack04,Boyack05}.  However, the resulting visualization is
+also static.  The layout algorithms designed for this LDRD project lie on
+the opposite end of the spectrum.  They are designed to run as fast as
+possible even if they do not give the most optimal result.  Such algorithms
+are vital for true interactivity.  Users can apply progressively slower
+algorithms to further refine the layout as necessary.
 
 \index{VxOrd|)}
 
 
 \chapter{Parallel Graph Visualization Framework}
-\label{sec:ParallelGraphVisualizationFramework}
+\label{chap:ParallelGraphVisualizationFramework}
 
 \section{Data Structures}
 \label{sec:ParallelGraphVisualizationFramework:DataStructures}
