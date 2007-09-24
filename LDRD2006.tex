@@ -19,10 +19,8 @@
 \newcommand{\titan}{Titan\index{Titan}\xspace}
 \newcommand{\threatview}{ThreatView\texttrademark\index{ThreatView@ThreatView\texttrademark}\xspace}
 
-\newcommand*{\keyterm}[2][!*!]{%
-  \textbf{#2}%
-  \ifthenelse{\equal{#1}{!*!}}{\index{#2}}{\index{#1}}%
-}
+\newcommand*{\keyterm}[1]{\textbf{#1}}
+\newcommand*{\keytermidx}[1]{\keyterm{#1}\index{#1}}
 
 %-----------------------------------------------------------------------------
 % My options
@@ -208,7 +206,7 @@ from within Sandia.
 
 To build a framework on which to visualize massive graphs, we start with an
 already well developed code base.  The field from which we draw from is
-\keyterm[scientific~visualization]{scientific visualization}.  Scientific
+\keyterm{scientific visualization}\index{scientific~visualization}.  Scientific
 visualization concerns the visualization of meshes, simulation results, and
 real-world sensor readings, all of which have a definition in physical
 space.  As a world leader in supercomputing for physical simulation, Sandia
@@ -217,23 +215,23 @@ has also fostered excellence in scalable parallel scientific visualization.
 \index{Visualization Toolkit|see{VTK}}
 
 The framework that Sandia uses to perform scientific visualization is
-embedded in \keyterm{VTK}, the Visualization Toolkit.  VTK provides a
+embedded in \keytermidx{VTK}, the Visualization Toolkit.  VTK provides a
 component architecture for visualization components that also provides for
 data-centric parallel processing.  Built on top of VTK is
-\keyterm{ParaView}, which provides both a client/server architecture for
+\keytermidx{ParaView}, which provides both a client/server architecture for
 parallel interactive visualizations and an end user application for
 performing parallel visualizations.
 
-Graph visualization falls under the classification of
-\keyterm[information~visualization]{information visualization}, which deals
-with abstract data types that have no necessary connection to physical
-space.  ParaView, designed as a scientific visualization tool, is not
-equipped to handle this type of visualization.  However, the distinction
-between scientific visualization and information visualization is in many
-ways artificial.  Many problems in one domain are mirrored in the other.
+Graph visualization falls under the classification of \keyterm{information
+visualization}\index{information~visualization}, which deals with abstract
+data types that have no necessary connection to physical space.  ParaView,
+designed as a scientific visualization tool, is not equipped to handle this
+type of visualization.  However, the distinction between scientific
+visualization and information visualization is in many ways artificial.
+Many problems in one domain are mirrored in the other.
 
 To leverage many of the features of VTK, including scalable parallel
-processing, we started the \keyterm[]{\titan} project.
+processing, we started the \keyterm{\titan} project.
 The \titan project organizes the work of several funding sources (this LDRD
 included) to complement VTK with information visualization capabilities.
 
@@ -271,14 +269,14 @@ redistributing edges as necessary \sticky{Check accuracy of that.}
 
 \section{Algorithms}
 
-\index{force-directed~layout|see{graph layout, force directed}}
+\index{graph~layout!force~directed|see{force-directed~layout}}
 
 With the framework in place to handle large, parallel graphs, we addressed
 the basic algorithms necessary for visualization.  One critical class of
 such algorithms are the layout algorithms that impose spatial coordinates
 on the graph elements such that their placement suggests the relationships
 of the entities.  The most common layout algorithms are
-\keyterm[graph~layout!force~directed]{force directed}, which places
+\keyterm{force directed}\index{force-directed~layout}, which places
 vertices by minimizing the energy caused by attractive and repulsive forces
 defined by the graph structure.  The time to solve this problem completely
 grows quadratically with respect to the number of graph nodes.  Good
@@ -291,7 +289,7 @@ linear running time.
 We investigated alternative layout algorithms that have a running time that
 grows linearly with respect to the number of vertices and edges in the
 graph and that can easily be run in parallel.  The first such algorithm,
-called simply \keyterm[fast~layout]{fast layout}, is a relatively
+called simply \keyterm{fast layout}\index{fast~layout}, is a relatively
 simple extension to the traditional force directed algorithm.  This
 algorithm follows the same basic flow except that the force field is
 computed on a finite mesh.  This sampled field can be computed in linear
@@ -301,7 +299,7 @@ simple reduce command.
 \index{graph~layout!G-Space|see{G-Space}}
 
 The second layout algorithm we designed is the
-\keyterm{G-Space} layout algorithm.  This algorithm differs
+\keytermidx{G-Space} layout algorithm.  This algorithm differs
 significantly from the traditional force-directed layout algorithm.  The
 G-Space algorithm first picks two vertices in the graph and performs a
 breadth-first search on each to determine the geodesic distance of each
@@ -377,14 +375,13 @@ these graphs is vital for detecting threats.
 \end{figure}
 
 Figure~\ref{fig:ThreatInvestigationCycle} shows the cyclical investigation
-of threats (a simplification of the
-\keyterm[analytical~reasoning~process]{analytical reasoning
-process}\cite{Thomas05}).  An annalist makes a hypothesis and based on this
-hypothesis queries the data for relevant information.  The annalist then
-investigates and explores this data.  Based on this investigation,
-conjectures are drawn and the hypothesis is modified in accordance to the
-new information.  The cycle is repeated with more queries to draw more data
-about the new information.
+of threats (a simplification of the \keyterm{analytical reasoning
+process}\index{analytical~reasoning~process}\cite{Thomas05}).  An annalist
+makes a hypothesis and based on this hypothesis queries the data for
+relevant information.  The annalist then investigates and explores this
+data.  Based on this investigation, conjectures are drawn and the
+hypothesis is modified in accordance to the new information.  The cycle is
+repeated with more queries to draw more data about the new information.
 
 Clearly this investigative process relies heavily on the ability to not
 only manage this data but to also sift through it quickly.  Several
@@ -407,7 +404,7 @@ A parallel framework is usable only if we have parallel algorithms to run
 on it.  This LDRD project developed some basic parallel graph algorithms
 that are fundamental to the visualization of these large graphs.  The
 algorithms are discussed in
-Chapter~\ref{chap:ParallelGraphVisualizationAlgorithms}.
+Chapter~\ref{chap:MassiveGraphVisualizationAlgorithms}.
 
 \section{Related Projects}
 \label{sec:RelatedProjects}
@@ -530,7 +527,7 @@ algorithms to further refine the layout as necessary.
 As part of \titan, this project leverages VTK\index{VTK} for its parallel
 graph visualization framework.  The VTK framework, which has supported
 parallel scientific visualization for years, is most efficient when running
-in \keyterm[data~parallelism]{data parallelism} mode.  In this mode, the
+in \keyterm{data parallelism}\index{data~parallelism} mode.  In this mode, the
 data is partitioned and divided amongst all of the processes.
 
 To support data parallelism, our framework must include two things.  We
@@ -561,17 +558,154 @@ input cannot bottleneck on any one process trying to read the data.
 \label{sec:ParallelGraphVisualizationFramework:ReadingAndQuerying}
 
 
-\chapter{Parallel Graph Visualization Algorithms}
-\label{chap:ParallelGraphVisualizationAlgorithms}
+\chapter{Massive Graph Visualization Algorithms}
+\label{chap:MassiveGraphVisualizationAlgorithms}
+
+There is much research, both inside and outside of Sandia, dedicated to the
+processing of large graphs.  In this LDRD we focused specifically on
+algorithms that provide mechanisms for visualizing large graphs.
 
 \section{Layout}
 \label{sec:Layout}
 
+\index{graph~layout|(}
+\index{layout|seealso{graph layout}}
+
+Most graphs have no relationship to physical space.  We may think of them
+as balls connected by sticks floating in space, but we cannot represent
+them this way until we have chosen a \keytermidx{layout}, the physical
+location of the graph elements.
+
+Technically, any graph layout is a valid one, but we consider some layouts
+better than others.  The criteria for a good layout can vary based on the
+problem domain, but the most universal criterion is that, on average,
+vertices that are connected by an edge are closer than vertices that are
+not connected.  Based on this criterion, we can develop general purpose
+layout algorithms that perform well on a wide variety of graphs.
+
 \subsection{Fast Layout}
 \label{sec:Layout:FastLayout}
 
+\index{fast~layout|(}
+
+Perhaps the oldest and most widely used class of layout algorithms are
+\keyterm{force-directed layout}\index{force-directed~layout}.  In this
+method of layout, forces are applied to vertices so that they are pushed in
+the direction of its neighbors.
+
+\begin{figure}
+  \centering
+  \fbox{A simple 4 node ``star'' graph.}
+  \fbox{The same vertices with forces.}
+  \caption[Forces on a simple graph.]{A simple graph and the forces applied
+    to it whose minimization yields an appropriate layout.}
+  \label{fig:GraphForces}
+\end{figure}
+
+Figure~\ref{fig:GraphForces} shows the typical forces applied to a graph.
+Vertices that are connected by edges have attractive or spring forces that
+increase with the distance between the vertices.  Unconnected vertices
+repel each other, and the repulsion becomes stronger as the vertices become
+closer.  The repulsive force is sometimes applied to all vertex pairs for
+consistency and to help prevent co-located vertices.
+
+The major problem with force-directed layout is that, typically, every
+vertex pair forms a force on each vertex.  Thus, completely resolving the
+accumulative forces on all vertices requires considering all vertex pairs.
+The number of vertex pairs grows quadratically with the number of
+vertices.  A parallel algorithm also has to contend with the communication
+overhead of dealing with all vertex pairs.  A good implementation will
+prune the overhead by ignoring insignificant forces such as repulsive
+forces of vertices far away\lcite{Hachul04}.  However, such optimizations
+can quickly complicate the algorithm and are difficult to parallelize.
+
+The \keyterm{fast layout} algorithm starts with the observation that if all
+vertices repel each other (and connected vertices have an overriding
+attractive force), then we can model the repulsive forces as a vector field
+that all the vertices share.  Rather than compute the repulsive forces
+individually for each vertex, the fast layout algorithm samples the vector
+field and computes it everywhere.
+
+\begin{figure}
+  \centering
+  A small grid showing the kernel for repulsive forces.
+  \caption{Repulsive force kernel.}
+  \label{fig:SplatKernel}
+\end{figure}
+
+To compute the vector field, we employ a technique called
+\keytermidx{splatting}.  To splat the vector field, we first create an
+image of a single vertex's impact on the vector field.  This image is
+called a \keytermidx{kernel}.  The kernel for the repulsive forces from a
+vertex point away from the vertex with decreasing magnitude, as
+demonstrated in Figure~\ref{fig:SplatKernel}.
+
+\begin{figure}
+  \centering
+  \fbox{One splat} \fbox{Two splats} \fbox{All splats}
+  \caption{Splatting kernels to get a vector field.}
+  \label{fig:Splatting}
+\end{figure}
+
+The vector field can then be determined by taking each vertex, finding the
+area of the field the vertex is located in, and ``splatting'' the kernel at
+that spot by adding the kernel to that region of the vector field, as shown
+in Figure~\ref{fig:Splatting}.  The vector field is formed when all of the
+splats accumulate.
+
+\index{splatting!fast|see{fast splatting}}
+
+A big overhead for the splatting technique is applying the kernel for each
+vertex.  The larger the kernel, the larger the overhead.  We can
+significantly reduce this overhead by using what we call the \keyterm{fast
+splatting}\index{fast~splatting} technique.  In this algorithm we perform
+the splatting in two phases.  In the first phase we perform a splat like
+before, except that we use a simple impulse kernel.  The kernel is a single
+pixel with a value of 1 in it.  So the end result is simply a count of the
+number of vertices that lie within a single sample of the grid.
+
+The next step is to convolve the impulses with the kernel we really want to
+splat.  Because the convolution of a kernel with an impulse is the kernel
+centered at the impulse and because you can factor convolution, the end
+result is the same as if we had splatted the kernel directly.
+
+For splatting large numbers of vertices, the fast splatting is
+significantly faster than the original algorithm.  Each vertex adds only
+one addition to the algorithm.  The convolution of vector field and kernel
+can be time consuming, but it is a fixed overhead; it does not grow with
+the number of vertices that you are splatting.  Unless you are splatting
+very few vertices, the time to convolve is smaller than the time to splat
+the kernel independently for each vertex.
+
+Using a splatting technique, the vector field for the repulsive forces can
+be determined in time linear with respect to the number of vertices.  The
+attractive forces are determined by following edges.  Thus the overall
+running time of the fast layout algorithm can be characterized by
+$O(|V|+|E|)$ where $|V|$ and $|E|$ are the number of vertices and edges in
+the graph, respectively.
+
+Making the fast layout algorithm parallel is straightforward.  The
+repulsive vector field can be determined by first independently computing
+the field on each process with its local partition of the graph.  The
+partial vector fields can then be combined by adding them together.  This
+can be done with a simple reduce operation available with MPI.
+
+Once the vector field is in place, the algorithm needs only to follow edges
+and find adjacent vertices for each vertex.  We can do this with limited
+communication using the edge partitioning\index{graph~partitioning!edge}
+described in
+Chapter~\ref{sec:ParallelGraphVisualizationFramework:DataStructures}.
+
+\index{fast~layout|)}
+
 \subsection{G-Space}
 \label{sec:Layout:GSpace}
+
+\index{G-Space|(}
+
+\index{G-Space|)}
+
+\index{graph~layout|)}
 
 \section{Edge Accumulation}
 \label{sec:EdgeAccumulation}
