@@ -3,12 +3,11 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\usepackage{varioref}
-\usepackage{fancyvrb}
 \usepackage{float}
 \usepackage{makeidx}
 \usepackage{cite}
 \usepackage{subfigure}
+\usepackage{ifthen}
 \usepackage{xspace}
 \usepackage{hyperref}
 
@@ -17,10 +16,13 @@
 %
 \newcommand*{\lcite}[1]{~\cite{#1}}
 \newcommand*{\scite}[1]{~\cite{#1}}
-\newcommand{\titan}{Titan\xspace}
-\newcommand{\threatview}{ThreatView\texttrademark\xspace}
+\newcommand{\titan}{Titan\index{Titan}\xspace}
+\newcommand{\threatview}{ThreatView\texttrademark\index{ThreatView@ThreatView\texttrademark}\xspace}
 
-\newcommand*{\keyterm}[1]{\textbf{#1}}
+\newcommand*{\keyterm}[2][!*!]{%
+  \textbf{#2}%
+  \ifthenelse{\equal{#1}{!*!}}{\index{#2}}{\index{#1}}%
+}
 
 %-----------------------------------------------------------------------------
 % My options
@@ -206,33 +208,32 @@ from within Sandia.
 
 To build a framework on which to visualize massive graphs, we start with an
 already well developed code base.  The field from which we draw from is
-\index{scientific~visualization}\keyterm{scientific visualization}.
-Scientific visualization concerns the visualization of meshes, simulation
-results, and real-world sensor readings, all of which have a definition in
-physical space.  As a world leader in supercomputing for physical
-simulation, Sandia has also fostered excellence in scalable parallel
-scientific visualization.
+\keyterm[scientific~visualization]{scientific visualization}.  Scientific
+visualization concerns the visualization of meshes, simulation results, and
+real-world sensor readings, all of which have a definition in physical
+space.  As a world leader in supercomputing for physical simulation, Sandia
+has also fostered excellence in scalable parallel scientific visualization.
 
 \index{Visualization Toolkit|see{VTK}}
 
 The framework that Sandia uses to perform scientific visualization is
-embedded in \index{VTK}\keyterm{VTK}, the Visualization Toolkit.  VTK
-provides a component architecture for visualization components that also
-provides for data-centric parallel processing.  Built on top of VTK is
-\index{ParaView}\keyterm{ParaView}, which provides both a client/server
-architecture for parallel interactive visualizations and an end user
-application for performing parallel visualizations.
+embedded in \keyterm{VTK}, the Visualization Toolkit.  VTK provides a
+component architecture for visualization components that also provides for
+data-centric parallel processing.  Built on top of VTK is
+\keyterm{ParaView}, which provides both a client/server architecture for
+parallel interactive visualizations and an end user application for
+performing parallel visualizations.
 
 Graph visualization falls under the classification of
-\index{information~visualization}\keyterm{information visualization}, which
-deals with abstract data types that have no necessary connection to
-physical space.  ParaView, designed as a scientific visualization tool, is
-not equipped to handle this type of visualization.  However, the distinction
+\keyterm[information~visualization]{information visualization}, which deals
+with abstract data types that have no necessary connection to physical
+space.  ParaView, designed as a scientific visualization tool, is not
+equipped to handle this type of visualization.  However, the distinction
 between scientific visualization and information visualization is in many
 ways artificial.  Many problems in one domain are mirrored in the other.
 
 To leverage many of the features of VTK, including scalable parallel
-processing, we started the \index{Titan@\titan}\keyterm{\titan} project.
+processing, we started the \keyterm[]{\titan} project.
 The \titan project organizes the work of several funding sources (this LDRD
 included) to complement VTK with information visualization capabilities.
 
@@ -277,12 +278,12 @@ the basic algorithms necessary for visualization.  One critical class of
 such algorithms are the layout algorithms that impose spatial coordinates
 on the graph elements such that their placement suggests the relationships
 of the entities.  The most common layout algorithms are
-\index{graph~layout!force~directed}\keyterm{force directed}, which places
-vertices by minimizing the energy caused by attractive and repulsive
-forces defined by the graph structure.  The time to solve this problem
-completely grows quadratically with respect to the number of graph nodes.
-Good approximations with better running times exist~\lcite{Hachul04}, but
-they are difficult to parallelize efficiently and still have a greater than
+\keyterm[graph~layout!force~directed]{force directed}, which places
+vertices by minimizing the energy caused by attractive and repulsive forces
+defined by the graph structure.  The time to solve this problem completely
+grows quadratically with respect to the number of graph nodes.  Good
+approximations with better running times exist~\lcite{Hachul04}, but they
+are difficult to parallelize efficiently and still have a greater than
 linear running time.
 
 \index{graph~layout!fast|see{fast layout}}
@@ -290,7 +291,7 @@ linear running time.
 We investigated alternative layout algorithms that have a running time that
 grows linearly with respect to the number of vertices and edges in the
 graph and that can easily be run in parallel.  The first such algorithm,
-called simply \index{fast~layout}\keyterm{fast layout}, is a relatively
+called simply \keyterm[fast~layout]{fast layout}, is a relatively
 simple extension to the traditional force directed algorithm.  This
 algorithm follows the same basic flow except that the force field is
 computed on a finite mesh.  This sampled field can be computed in linear
@@ -300,7 +301,7 @@ simple reduce command.
 \index{graph~layout!G-Space|see{G-Space}}
 
 The second layout algorithm we designed is the
-\index{G-Space}\keyterm{G-Space} layout algorithm.  This algorithm differs
+\keyterm{G-Space} layout algorithm.  This algorithm differs
 significantly from the traditional force-directed layout algorithm.  The
 G-Space algorithm first picks two vertices in the graph and performs a
 breadth-first search on each to determine the geodesic distance of each
@@ -377,7 +378,7 @@ these graphs is vital for detecting threats.
 
 Figure~\ref{fig:ThreatInvestigationCycle} shows the cyclical investigation
 of threats (a simplification of the
-\index{analytical~reasoning~process}\keyterm{analytical reasoning
+\keyterm[analytical~reasoning~process]{analytical reasoning
 process}\cite{Thomas05}).  An annalist makes a hypothesis and based on this
 hypothesis queries the data for relevant information.  The annalist then
 investigates and explores this data.  Based on this investigation,
@@ -420,7 +421,7 @@ than competitive.
 \subsection{\titan}
 \label{sec:RelatedProjects:Titan}
 
-\index{Titan@\titan|(}
+%\index{Titan@\titan|(}
 
 The \titan project is a coordination of several other projects, this LDRD
 included, to merge \index{scientific~visualization}scientific visualization
@@ -434,12 +435,12 @@ information visualization tools.
 This LDRD project provides the necessary tools to make \titan scale to
 large, parallel, distributed-memory computers.
 
-\index{Titan@\titan|)}
+%\index{Titan@\titan|)}
 
 \subsection{\threatview}
 \label{sec:RelatedProjects:ThreatView}
 
-\index{ThreatView@\threatview|(}
+%\index{ThreatView@\threatview|(}
 
 \index{NGIC|see{National Ground Intelligence Center}}
 
@@ -455,7 +456,7 @@ mode.  However, the funding does not include the parallel framework and
 algorithms also required for parallel processing.  Instead, \threatview
 expects to leverage contributions from other projects (i.e. this LDRD).
 
-\index{ThreatView@\threatview|)}
+%\index{ThreatView@\threatview|)}
 
 \subsection{Multi-Threaded Graph Library}
 \label{sec:RelatedProjects:MTGL}
@@ -525,6 +526,19 @@ algorithms to further refine the layout as necessary.
 
 \chapter{Parallel Graph Visualization Framework}
 \label{chap:ParallelGraphVisualizationFramework}
+
+As part of \titan, this project leverages VTK\index{VTK} for its parallel
+graph visualization framework.  The VTK framework, which has supported
+parallel scientific visualization for years, is most efficient when running
+in \keyterm[data~parallelism]{data parallelism} mode.  In this mode, the
+data is partitioned and divided amongst all of the processes.
+
+To support data parallelism, our framework must include two things.  We
+need data structures that can hold a distributed graph and provide
+mechanisms for retrieving connectivity information between processes.  We
+also need the ability to load data into the framework.  This means reading
+the data from files or querying from databases.  To be scalable, the data
+input cannot bottleneck on any one process trying to read the data.
 
 \section{Data Structures}
 \label{sec:ParallelGraphVisualizationFramework:DataStructures}
