@@ -620,6 +620,57 @@ root of the total processes.
 \section{Reading and Querying}
 \label{sec:ParallelGraphVisualizationFramework:ReadingAndQuerying}
 
+We currently are only able to read in parallel graphs from a database.  The
+reasons for this are two-fold.  First, we currently have no file formats
+that can hold massive graphs and still be read from efficiently in
+parallel.  Second, there is little reason to read in a large graph without
+querying capability.  From our use cases and personal experience, graph
+analysis is an iterative process of searching and studying data as
+described in Chapter~\ref{chap:Introduction}.  The ability to query the
+data is paramount to this process.  Thus, it would never make much sense to
+load data from a flat file.  Instead, an introductory step would be to load
+everything into a database for efficient access.
+
+We assume that whatever database we are accessing implements the
+\keyterm{Structured Query Language}\index{Structured Query Language}
+(SQL)\index{SQL|see{Structured Query Language}} or something equivalent.
+This is a reasonable assumption as SQL is an industry adopted interface that
+is implemented all current relational databases.  Other types of databases,
+for example object oriented databases, might not implement SQL per se, but
+will definitely have to implement the equivalent functionality to hope for
+adoption.
+
+In this document we describe reading from relational databases (i.e. from
+tables).  Relational databases are currently the most mature databases, and
+this is the implementation we have so far.  However, we are also
+considering, but have not implemented, reading from object oriented
+databases.
+
+A precondition for reading a graph from a database is to have ready a
+vertex table and an edge table.  This does not preclude building graphs
+from database queries; it simply means the queries must first be directed
+to this pair of tables.  If necessary, the vertex table can be derived from
+the edge table by performing a query on the latter that lists all unique
+vertex entries.
+
+The parallel graph reader first performs a row count on the vertex table.
+This provides us with the size of the full adjacency
+table\index{adjacency~table} for the graph (which we are not actually
+building but simply considering the conceptual model).  Knowing the
+dimensions of the adjacency table, we can decide on the partition of the
+vertices and edges (described in the previous section on data structures).
+Each process then reads in the vertex data relevant to its local partition
+using a query on the vertex table with limits.
+
+The information returned from the vertex table query includes the
+identifiers for the vertices that correspond to the entries in the edge
+table.  We use this information to retrieve the appropriate edges from the
+edge table.  To do this, each process builds rather elaborate queries on
+the edge table using values clauses that specify the vertices that should
+be pulled from the edge table.  The returned table of edges provides the
+necessary information for building the partial adjacency
+lists\index{partial~adjacency~lists} required for the parallel graph.
+
 
 \chapter{Massive Graph Visualization Algorithms}
 \label{chap:MassiveGraphVisualizationAlgorithms}
