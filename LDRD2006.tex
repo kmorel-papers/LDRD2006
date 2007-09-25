@@ -1,5 +1,6 @@
 \documentclass[pdf,12pt,report,strict]{SANDreport}
 
+\usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
@@ -235,20 +236,18 @@ processing, we started the \keyterm{\titan} project.
 The \titan project organizes the work of several funding sources (this LDRD
 included) to complement VTK with information visualization capabilities.
 
-\index{graph~partitioning!vertex}
-\index{graph~partitioning!edge}
+\index{edge~partitioning}
 
 The role of this project in \titan is the creation of scalable graph
 components.  To accommodate parallel graph structures in a variety of
-settings, we built data sets that support both vertex and edge
-partitioning, as defined by Yoo et al.\scite{Yoo05}. \sticky{Can
-  you convert (or, more specifically, repartition)?}  These partitioning
-structures allow you to divide the graph data amongst distributed processes
-and identify where neighboring vertices are located, the bare minimum for
-supporting parallel graphs, In addition, edge partitioning also limits the
-amount of communication needed to get neighborhood information and to trace
-connections within graphs.  This feature can drastically reduce the
-communication overhead in algorithms.
+settings, we built data sets that support edge partitioning, as defined by
+Yoo et al.\scite{Yoo05}.  These partitioning structures allow you to divide
+the graph data amongst distributed processes and identify where neighboring
+vertices are located, the bare minimum for supporting parallel graphs, In
+addition, edge partitioning also limits the amount of communication needed
+to get neighborhood information and to trace connections within graphs.
+This feature can drastically reduce the communication overhead in
+algorithms.
 
 The ability to store large graphs in parallel is pointless unless one can
 load in data, so our project addressed this as well.  Once data is
@@ -265,7 +264,7 @@ First, we read data from the database in a parallel distributed manner.  We
 do this by first instructing the database to save a query in an internal
 structure, and then we stream partitions of the table in each process.
 Second, we convert the tables into graphs by identifying vertices and
-redistributing edges as necessary \sticky{Check accuracy of that.}
+pulling in edges as necessary.
 
 \section{Algorithms}
 
@@ -540,19 +539,83 @@ input cannot bottleneck on any one process trying to read the data.
 \section{Data Structures}
 \label{sec:ParallelGraphVisualizationFramework:DataStructures}
 
-\index{graph~partitioning!edge|(}
-\index{graph~partitioning!2D|see{graph partitioning, edge}}
-\index{edge~partitioning|see{graph partitioning, edge}}
-\index{2D~partitioning|see{graph partitioning, edge}}
+The \titan data structure for holding graphs uses an \keyterm{adjacency
+list}\index{adjacency~list} for its representation.  In this
+representation, edges are defined with a variable-sized array on each
+vertex that points to the vertices to which it connects.  For graphs with
+average vertex degree much lower than the total number of vertices in the
+graph (which is by far the common case), this is a compact representation.
 
-\index{graph~partitioning!vertex}
-\index{graph~partitioning!1D|see{graph partitioning, vertex}}
-\index{vertex~partitioning|see{graph partitioning, vertex}}
-\index{1D~partitioning|see{graph partitioning, vertex}}
+\index{graph~partitioning!vertex|see{vertex partitioning}}
+\index{graph~partitioning!1D|see{vertex partitioning}}
+\index{1D~partitioning|see{vertex partitioning}}
 
-2D edge partitioning\lcite{Yoo05} is cool.
+We used the work of Yoo et al.\scite{Yoo05} to guide our implementation of
+parallel graphs.  Yoo defines two ways to partition a graph.  The first
+way, \keyterm{vertex partitioning}\index{vertex~partitioning} or 1D
+partitioning, is a common but na\"ive partitioning.  The basic idea is to
+divide the vertices of the graph amongst processes and then assign edges
+based on the process holding the originating vertex.  This partitioning is
+convenient in that the outgoing connectivity for each vertex is held
+locally.  However, the collection of vertices in each process can, and most
+often does, point to vertices in all other processes, thereby requiring
+much all-to-all communication for anything but the most trivial algorithms.
 
-\index{graph~partitioning!edge|)}
+\index{edge~partitioning|(}
+\index{graph~partitioning!2D|see{edge partitioning}}
+\index{graph~partitioning!edge|see{edge partitioning}}
+\index{2D~partitioning|see{edge partitioning}}
+
+The second partitioning mechanism Yoo describes, \keyterm{edge
+partitioning} or 2D partitioning, divides edges instead of vertices.  Edge
+partitioning uses not a linear list of $p$ process but rather a 2D array of
+$r \cdot c = p$ processes. (The processes do not have to be in a physical
+array.  It is simply an indexing scheme using pairs to identify processes.)
+
+\begin{figure}
+  \centering
+  \begin{equation*}
+    \left[
+      \begin{array}{c|c|c|c}
+	\qquad A_{1,1}^{(1)} \qquad & \qquad A_{1,2}^{(1)} \qquad
+	& \qquad \cdots \qquad & \qquad A_{1,c}^{(1)} \qquad \\ \hline
+	A_{2,1}^{(1)} & A_{2,2}^{(1)} & \cdots & A_{2,c}^{(1)} \\ \hline
+	\vdots        & \vdots        & \ddots & \vdots        \\ \hline
+	A_{r,1}^{(1)} & A_{r,2}^{(1)} & \cdots & A_{r,c}^{(1)} \\ \hline
+	\multicolumn{4}{c}{\vdots}                             \\
+	\multicolumn{4}{c}{\vdots}                             \\
+	\multicolumn{4}{c}{\vdots}                             \\ \hline
+	A_{1,1}^{(c)} & A_{1,2}^{(c)} & \cdots & A_{1,c}^{(c)} \\ \hline
+	A_{2,1}^{(c)} & A_{2,2}^{(c)} & \cdots & A_{2,c}^{(c)} \\ \hline
+	\vdots        & \vdots        & \ddots & \vdots        \\ \hline
+	A_{r,1}^{(c)} & A_{r,2}^{(c)} & \cdots & A_{r,c}^{(c)} \\
+      \end{array}
+    \right]
+  \end{equation*}
+  \caption[Edge partitioning layout.]{Edge partitioning layout from Yoo et
+    al.\scite{Yoo05}.  The notation $A_{i,j}^{(*)}$ denotes a block owned
+    by process $(i,j)$.}
+  \label{fig:EdgePartitioningLayout}
+\end{figure}
+
+We partition the edges by first looking at the complete $|V|\times|V|$
+adjacency matrix. (Again, we do not have to actually store the edges in an
+adjacency matrix; this is just a conceptual model for dividing edges.) The
+columns of this array are grouped into $c$ partitions and the rows are
+grouped into $r \cdot c$ partitions.  These partitions are then assigned to
+processes as demonstrated in Figure~\ref{fig:EdgePartitioningLayout}.  The
+result is a \keyterm{partial adjacency
+matrix}\index{partial~adjacency~matrix} stored on each process.
+
+The advantage of edge partition over vertex partitioning is that any edge
+in the graph can be followed by moving along the row or column in the
+adjacency table.  By the way adjacency table is divided amongst processes,
+the number of processes assigned to a row or column of the table is $r$ or
+$c$, respectively.  Assuming $r$ and $c$ are relatively equal, a process
+can follow all of the local edges by communicating with roughly a square
+root of the total processes.
+
+\index{edge~partitioning|)}
 
 \section{Reading and Querying}
 \label{sec:ParallelGraphVisualizationFramework:ReadingAndQuerying}
@@ -699,7 +762,7 @@ simple reduce operation available with MPI.
 
 Once the vector field is in place, the algorithm needs only to follow edges
 and find adjacent vertices for each vertex.  We can do this with limited
-communication using the edge partitioning\index{graph~partitioning!edge}
+communication using the edge partitioning\index{edge~partitioning}
 described in
 Chapter~\ref{sec:ParallelGraphVisualizationFramework:DataStructures}.
 
@@ -980,7 +1043,7 @@ searches\index{breadth-first~search}.  Yoo's algorithm is proven to be
 scalable and efficient on distributed memory machines.  The vertex bundling
 and breakout requires only knowing the bin of the nearest neighbors.  This
 information can be achieved with a limited amount of communication with the
-edge partitioning\index{graph~partitioning!edge} described in
+edge partitioning\index{edge~partitioning} described in
 Chapter~\ref{sec:ParallelGraphVisualizationFramework:DataStructures}.
 
 \subsubsection{Results}
