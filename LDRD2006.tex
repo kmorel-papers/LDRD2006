@@ -609,6 +609,8 @@ repel each other, and the repulsion becomes stronger as the vertices become
 closer.  The repulsive force is sometimes applied to all vertex pairs for
 consistency and to help prevent co-located vertices.
 
+\subsubsection{Splatting Vector Fields}
+
 The major problem with force-directed layout is that, typically, every
 vertex pair forms a force on each vertex.  Thus, completely resolving the
 accumulative forces on all vertices requires considering all vertex pairs.
@@ -653,6 +655,8 @@ that spot by adding the kernel to that region of the vector field, as shown
 in Figure~\ref{fig:Splatting}.  The vector field is formed when all of the
 splats accumulate.
 
+\subsubsection{Fast Splatting}
+
 \index{splatting!fast|see{fast splatting}}
 
 A big overhead for the splatting technique is applying the kernel for each
@@ -684,11 +688,14 @@ running time of the fast layout algorithm can be characterized by
 $O(|V|+|E|)$ where $|V|$ and $|E|$ are the number of vertices and edges in
 the graph, respectively.
 
-Making the fast layout algorithm parallel is straightforward.  The
-repulsive vector field can be determined by first independently computing
-the field on each process with its local partition of the graph.  The
-partial vector fields can then be combined by adding them together.  This
-can be done with a simple reduce operation available with MPI.
+\subsubsection{Parallelizing Fast Layout}
+
+Although we have not yet had a chance to implement it, making the fast
+layout algorithm parallel is straightforward.  The repulsive vector field
+can be determined by first independently computing the field on each
+process with its local partition of the graph.  The partial vector fields
+can then be combined by adding them together.  This can be done with a
+simple reduce operation available with MPI.
 
 Once the vector field is in place, the algorithm needs only to follow edges
 and find adjacent vertices for each vertex.  We can do this with limited
@@ -702,6 +709,306 @@ Chapter~\ref{sec:ParallelGraphVisualizationFramework:DataStructures}.
 \label{sec:Layout:GSpace}
 
 \index{G-Space|(}
+
+Unlike the fast layout\index{fast~layout} algorithm, the G-Space algorithm
+significantly diverges from the force-directed
+layout\index{force-directed~layout} approach.  However, the G-Space graph
+layout approach appears to be suitable for analyzing graph structures on
+multiple scales under various use cases; it can be used to visualize
+extremely large graphs representing a database of relationships in its
+entirety, or it can be used to show the results of a targeted
+point-to-point query (e.g. Kevin Bacon query). The first phase of our
+approach was originally inspired by the point-to-point case so we’ll begin
+our explanation there.
+
+\index{LDE|see{Low Dimensional Embedding}}
+\index{HDE|see{High Dimensional Embedding}}
+
+\subsubsection{Low Dimensional Embedding (LDE)}
+
+\index{Low~Dimensional~Embedding|(}
+
+The G-Space starts with a technique we call Low Dimensional Embedding
+(LDE).  Clearly, LDE is a play on the term HDE (High Dimensional Embedding)
+and we adopted it in homage of the work done by Harel and
+Koren~\scite{Harel02}.  When we started our work, we were not yet familiar
+with HDE and were only interested in two dimensional embeddings. Our work
+was motivated by the following use case: given a database containing a
+large social network, a user wishes to see the
+\keytermidx{meta-relationship} (shortest path, types of relationships along
+the shortest path, identified critical links, etc.) between two
+individuals. Thus the LDE process is essentially HDE with two pivot points.
+
+\begin{figure}
+  \centering
+  \includegraphics{images/GSpaceExampleGraph}
+  \caption{Example email network.}
+  \label{fig:GSpaceExampleGraph}
+\end{figure}
+
+To demonstrate the LDE, we will use the simple graph shown in
+Figure~\ref{fig:GSpaceExampleGraph}.  Assume that the user wishes to
+display the meta-relationship between vertices ``Martha'' and ``Tonk.''
+
+\begin{figure}
+  \centering
+  \includegraphics{images/GSpaceExampleBFS}
+  \caption[Using shortest path lengths for coordinates.]{Giving coordinates
+    to the graph vertices based on their shortest path distance from pivot
+    points.}
+  \label{fig:GSpaceExampleBFS}
+\end{figure}
+
+\index{BFS|see{breadth-first search}}
+
+The LDE process selects those two vertices as pivot points and conducts a
+breadth-first search\index{breadth-first~search} (BFS) from each. Each BFS
+tags the vertices it visits with the length of the shortest path the the
+start vertex. Every vertex now has an associated two-tuple containing its
+shortest-path distance from each of the two pivot points as shown in
+Figure~\ref{fig:GSpaceExampleBFS}.
+
+\begin{figure}
+  \centering
+  \includegraphics{images/GSpaceExamplePlot}
+  \caption[Direct mapping of graph distance.]{Direct mapping of graph
+    distance (length of the unweighted shortest path) as coordinates into
+    two dimensional space.}
+  \label{fig:GSpaceExamplePlot}
+\end{figure}
+
+Using these tuples we simply map each vertex into two dimensional geometric
+space as shown in Figure~\ref{fig:GSpaceExamplePlot}.  You can see from
+Figures~\ref{fig:GSpaceExampleBFS} and \ref{fig:GSpaceExamplePlot} that the
+``Jeff'' and ``Bubbles'' vertices both have distance coordinates of 3,1
+from the pivot points (a many-to-one mapping in the embedding
+process). Where HDE resolves these many-to-one mappings using higher
+dimensions and principle components analysis (PCA), LDE accepts the
+many-to-one mappings and resolves them using a different technique (which
+we address later). The advantage to this approach is that there is no need
+to run 50 or 100 breadth-first searches (BFS), embed the graph into a 100
+dimensional space, do a PCA, compute projections with maximal variance and
+then project down to two dimensions.
+
+\begin{figure}
+  \centering
+  \includegraphics{images/GSpaceExampleFeatures}
+  \caption{Low dimensional embedding feature lines.}
+  \label{fig:GSpaceExampleFeatures}
+\end{figure}
+
+The simplicity of the low dimensional embedding exposes many interesting
+geometric properties within the layout as shown in
+Figure~\ref{fig:GSpaceExampleFeatures}.  The embedding based on
+graph-theoretical distance ensures that the shortest path between the pivot
+points is guaranteed to be along the dashed green line. Longer paths form
+``arcs'' into the positive quadrant.  The light blue line represents
+shortest path equidistance between the pivot points. ``Flo'' has a shorter
+path to ``Tonk'' than to ``Martha'' simply based on this geometric
+property.  The distance from a vertex to a pivot vertex can never be
+greater than its distance to the other pivot vertex plus the shortest path
+between the pivots. Thus, the two darker purple lines mark the
+``boundaries'' of the layout.
+
+\begin{figure}
+  \centering
+  \includegraphics{images/GSpaceExampleRotated}
+  \caption{LDE plot rotated 135 degrees.}
+  \label{fig:GSpaceExampleRotated}
+\end{figure}
+
+Rotating the graph 135 degrees, as demonstrated in
+Figure~\ref{fig:GSpaceExampleRotated}, provides a more natural
+orientation.  The shortest path will be along the top and equidistance is
+the vertical line in the center.
+
+\index{Low~Dimensional~Embedding|)}
+
+\subsubsection{Generalizing the LDE Process}
+
+The previous example uses a point-to-point query where the two pivot points
+for the LDE were specified by the user. As mentioned in the HDE work, pivot
+points can be automatically computed. In our case, we run a total of three
+BFS searches. The first BFS begins at a random vertex within the graph,
+finds a \keyterm{pseudo-peripheral vertex}\index{pseudo-peripheral~vertex},
+a vertex that has a long shortest path but is not guaranteed to be the
+longest.  The pseudo-peripheral vertex is chosen simply as one of the
+vertices furthest from the initial random pick.  The pseudo-peripheral
+vertex becomes one of the pivot points and is passed as the starting-point
+for the second BFS.  The second BFS provides vertices with the first
+component of their graph distance tuple, and identifies a second
+pseudo-peripheral vertex to use as the second pivot point.. This vertex
+becomes the starting-point for the third BFS, which provides each vertex
+with the second component of the distance tuple. The running time of this
+phase is $O(|V|+|E|)$ where $|V|$ and $|E|$ are the number of vertices and
+edges in the graph, respectively.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=4in]{images/GSpaceEnron}
+  \caption[Automatic LDE layout of the Enron email database.]{Automatic LDE
+    layout of the Enron email database (322k edges, 75k
+    vertices)\lcite{Klimt04}.}
+  \label{fig:GSpaceEnron}
+\end{figure}
+
+In our testing the algorithm appeared fairly insensitive to the particular
+choice of peripheral vertices; initially we had been more formal about the
+pivot choices. In fact, the normal procedure for finding pseudo-peripheral
+vertices is to conduct a series of BFS passes until the passes give
+convergence on the two pivot points. Figure~\ref{fig:GSpaceEnron}
+demonstrates the layout resulting from the generalized LDE process with
+automatic pivot calculation.
+
+\subsubsection{Resolving the Many-to-One Mappings}
+
+\index{vertex~bundling|(}
+
+Inspired by the terrific edge bundling technique of Holten\scite{Holten06},
+we adopted the term \keyterm{vertex bundling} to describe how vertices can
+be packed together based on their connectivity attributes. Vertices have
+edge obligations to other vertices; if you have the same obligations as
+another set of vertices, bundle yourself together and \emph{minimize} the
+space you take up.
+
+\begin{figure}
+  \centering
+  \subfigure[Typical Force Directed Space Filling]{
+    \label{fig:GSpaceVertexBundles:ForceDirected}
+    \includegraphics{images/GSpaceVBForceDirected}
+  }
+  \qquad
+  \subfigure[Space Minimizing Vertex Bundles]{
+    \label{fig:GSpaceVertexBundles:VertexBundles}
+    \includegraphics{images/GSpaceVBVertexBundles}
+  }
+  \caption[Simplifying graph layout with vertex bundles.]{Simplifying graph
+    layout, and clarifying topological relationships with the use of vertex
+    bundles.}
+  \label{fig:GSpaceVertexBundles}
+\end{figure}
+
+If you take the small graph in Figure~\ref{fig:GSpaceVertexBundles}, you
+see that traditionally the vertices are pushed apart to fill the available
+space. We suggest the opposite approach, grouping the vertices together
+into ``semantic'' bundles which, like the edge bundling technique, simplify
+the layout and bring clarity to the topological relationships within the
+graph.
+
+On the large scale, vertex bundling can be used to resolve a significant
+portion of our many-to-one mapping problem. We now use the problematic
+distance bins as an ally to create a ``scaffolding'' of control
+points. Each vertex has an edge to one of more other vertices, at this
+point all vertices lie within a bin (control point), so we simply traverse
+the vertex list, determining which vertices have edges to which control
+points and bundle all vertices with edges to the same control points.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=2in]{images/GSpaceBundlingOriginal}
+  \qquad
+  \includegraphics[width=2in]{images/GSpaceBundlingBreakout}
+  \caption[Applying vertex bundling.]{ On the left an LDE layout of a
+    subset of the Enron database (1374 Vertices, 2241 Edges). On the right
+    the same layout after the vertex bundling pass. Vertex bundling
+    significantly mitigates the many-to-one mappings and helps convey
+    topological information.}
+  \label{fig:GSpaceBundling}
+\end{figure}
+
+After the graph has been through the LDE phase and looks like the layout
+shown on the left side of Figure~\ref{fig:GSpaceBundling}, we now pass the
+graph through the vertex bundling process and in a manner similar to
+marching cubes, each vertex has its edges tested against a case table of
+control points to see which vertex bundle it will be a member of. The
+entire graph is processed from first vertex to last, and depending on which
+case is matched the vertex is offset some relative amount from its
+current position. The running time of this phase is $O(|V|+|E|)$.
+
+\begin{figure}
+  \centering
+  \includegraphics{images/GSpaceBundleMap}
+  \caption[Vertex bundle Map.]{Vertex bundle Map. For each distance bin
+    created by the LDE, the following vertex bundle map is applied.}
+  \label{fig:GSpaceBundleMap}
+\end{figure}
+
+Currently we call out 14 different cases (and 11 additional sub-cases) that
+are split out from the LDE bins as shown in
+Figure~\ref{fig:GSpaceBundleMap}. The 25 defined cases are as follows. For
+each vertex the following are determined:
+
+\begin{enumerate}
+\item Edges only go to vertices in 1 bin: case 0.
+\item Edges go to vertices of 2 bins: cases 1 - 11.
+\item If you are case 1-11 and also have edges back to the main bin then
+  you are placed very close to your bundle but biased toward the main bin
+  (see inset of Figure~\ref{fig:GSpaceBundlingInsets}): cases 12 - 22.
+\item If you do not meet any of these 23 cases, but you have one or more
+  edge connections within the same bin you stay in the bin: case 23.
+\item If none of these apply then you are marked as an ``unresolved
+  vertex'' and placed in the main bin.
+\end{enumerate}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=4in]{images/GSpaceBundlingInsets}
+  \caption[Vertex bundling breakout with layout detail.]{Enlarged image of
+    vertex bundling breakout (left side of Figure~\ref{fig:GSpaceBundling}
+    with insets showing layout detail.}
+  \label{fig:GSpaceBundlingInsets}
+\end{figure}
+
+The diagram in Figure~\ref{fig:GSpaceBundleMap}, at first looks oddly
+biased towards the bottom left corner. When splitting out the vertex
+bundles an even distribution seems more effective, until the realization
+that these bundle maps are applied at every bin within the LDE layout. So
+the diagram will need to mesh well when placed next to, above, and below
+your neighbors who are also applying the diagram to their vertices.
+
+\index{vertex~bundling|)}
+
+\subsubsection{Parallelizing the G-Space Layout}
+
+We have not yet had a chance to implement it, but performing a G-Space
+layout in parallel is straightforward and efficient.  All the major pieces
+for doing this are given by Yoo et al.\scite{Yoo05} and are already
+implemented in \titan.
+
+The majority of the layout algorithm involves performing breadth-first
+searches\index{breadth-first~search}.  Yoo's algorithm is proven to be
+scalable and efficient on distributed memory machines.  The vertex bundling
+and breakout requires only knowing the bin of the nearest neighbors.  This
+information can be achieved with a limited amount of communication with the
+edge partitioning\index{graph~partitioning!edge} described in
+Chapter~\ref{sec:ParallelGraphVisualizationFramework:DataStructures}.
+
+\subsubsection{Results}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=5in]{images/GSpaceComparison}
+  \caption[Correlation of the G-Space layout to force directed
+    layout.]{Correlation of the G-Space layout to a traditional force
+    directed layout.  Color matched circles represent similar sets of
+    vertices between the two layouts. Data: subset of Enron database (1374
+    Vertices, 2241 Edges).}
+  \label{fig:GSpaceComparison}
+\end{figure}
+
+The quality of the visual layout of G-Space is hard to quantify when
+comparing it to other layout techniques. The angular lines and extremely
+tight clusters give the appearance that the layout is showing a small
+graph, and so we wanted to give some visual registration with
+Figure~\ref{fig:GSpaceComparison}. The color matched circles enclose the
+same vertex sets in both layouts. The dataset shown is a subset of the
+Enron email database (1374 Vertices, 2241 Edges). The remarkable
+correlation between the visual appearances of the layouts is partially
+because they were rotated and scaled to better show cluster similarity.
+
+On a qualitative level, when exploring the two layouts side by side, with
+linked selection, the G-Space layout conveys better global graph structure
+and allows more detailed inspection of topological relationship.
 
 \index{G-Space|)}
 
