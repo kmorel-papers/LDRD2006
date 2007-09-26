@@ -1346,14 +1346,14 @@ there is less items in the queue.  Thus, not having the \const{Add} events,
 for which there will be more of throughout the algorithm than the
 \const{Remove} events, will significantly save on the running time.
 
-\section{Landscape View}
+\section{Parallel Landscape View}
 \label{sec:LandscapeView}
 
 \begin{figure}
   \centering
   \includegraphics[width=5in]{images/Landscape}
-  \caption[Example of landscape view]{An example of a landscape graph view
-    (right) with the corresponding ball and stick view on the left.}
+  \caption[An example of landscape view.]{An example of a landscape graph
+    view (right) with the corresponding ball and stick view on the left.}
   \label{fig:LandscapeView}
 \end{figure}
 
@@ -1400,8 +1400,122 @@ transformed in the serial manner described previously.  The resulting
 geometry can also be sent from parallel server to client for local
 rendering and display.
 
-\section{Peak Identification and Labeling}
+\section{Parallel Peak Identification and Labeling}
 \label{sec:PeakIdentificationAndLabeling}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=2.5in]{images/PeakLabels}
+  \caption{An example of peak labels.}
+  \label{fig:PeakLabels}
+\end{figure}
+
+The big advantage of the landscape view is that it provides the location
+and relative size of vertex clusters within a graph that automatically
+change scope as the user zooms in and out.  This information is
+meaningless, however, without knowing what each peak represents.  We can
+provide a lot of information about each peaks contents with \keyterm{peak
+labeling}\index{peak~labeling}, where we place an identifying string at
+each peak of the landscape as shown in Figure~\ref{fig:PeakLabels}.
+
+Requiring the user to label the peaks is problematic as it is a time
+consuming task that would have to be repeated when the view changes.
+Instead, we would like the visualization to automatically identify the
+peaks in the landscape and provide a label based on the data of the
+vertices contributing to the peak.
+
+\begin{figure}
+  \centering
+  \sticky{Make a nice graphic.  Use Peak Identification, Contributor
+    Identification, and Label Extraction for the process blocks rather than
+    VTK classes.}
+  \begin{verbatim}
+    [landscape height image]
+               |
+               v
+vtkPImagePeakIdentificationFilter
+               |
+          [peak points]    [parallel graph, ghost points removed]
+               |                  |      |
+               v                  v      |
+      vtkFindContributors <--- [kd-tree] |
+               |                         |
+  [peak points with contributor sets]    |
+               |                         |
+               |   +---------------------+
+               v   v
+      vtkPExtractLabels
+               |
+               v
+    [peak points with label field]
+  \end{verbatim}
+  \caption{Flow for peak identification and labeling.}
+  \label{fig:PeakLabelFlow}
+\end{figure}
+
+Figure~\ref{fig:PeakLabelFlow} shows the flow for the basic peak
+identification and labeling algorithm.  There are three major functional
+units.  \keyterm{Peak identification}\index{peak~identification} finds the
+location of all the peaks in the landscape.  \keyterm{Contributor
+identification}\index{contributor~identification} finds the vertices that
+most contribute to the peak.  \keyterm{Label
+extraction}\index{label~extraction} uses the contributing vertices to
+determine a descriptive string.  Like the landscape generation, these tasks
+must finish quickly as they happen every time the user changes the view.
+
+\subsection{Peak Identification}
+
+\index{peak~identification|(}
+
+The peak identification is the simplest portion of the algorithm.  A peak
+is simply a local maximum in the height field.  To find the peaks, we
+simply need to find the landscape points with the highest value in a
+specified radius.  We make the radius larger than its immediate neighbors
+to avoid many peaks in relatively flat areas.  We find that a default
+radius of around 5\% of the total landscape works well.
+
+Remember from the previous section on the landscape generation that the
+landscape geometry created is independent of the graph size and is always
+small.  Thus, the peak identification is performed on one process and the
+result is broadcast to the rest of the processes.
+
+\index{peak~identification|)}
+
+\subsection{Contributor Identification}
+
+\index{contributor~identification|(}
+
+The contributor identification finds all of the vertices located within a
+certain distance from each peak.  Each process, which holds a distinct
+partition of the graph, performs this operation independently.
+
+To make sure that these vertices can be found quickly, they are placed in a
+\keytermidx{kd-tree} search structure\lcite{deBerg00} as a preprocessing
+step.  We also speed up the search by looking for vertices in a square
+rather than a circle.  Although this adds preference to vertices diagonally
+away, it has little influence on the final result (which is a heuristic
+measure anyway).
+
+\index{contributor~identification|)}
+
+\subsection{Label Extraction}
+
+\index{label~extraction|(}
+
+The label extraction takes each set of vertices ``nearby'' a peak and finds
+the words most commonly used in the associated data.  These words are then
+used to build the string for the label.
+
+The parallel processing of the label extraction starts independently on all
+processes.  Each process takes each vertex set and extracts all the words
+for the identifiers for those vertices.  They then count the instances of
+the words and identify the most common sets of words.
+
+Once independently extracted, these common words sets are aggregated on one
+of the processes where the order is reevaluated and the final labels are
+constructed from the most common words.
+
+\index{label~extraction|)}
 
 
 \chapter{Future Work}
