@@ -47,7 +47,7 @@
 % ---------------------------------------------------------------------------- %
 % Set the title, author, and date
 %
-\title{Massive Graph Visualization}
+\title{Massive Graph Visualization: LDRD Final Report}
 \author{Dr. Kenneth D. Moreland, SMTS\\
 Scalable Analytics \& Visualization\\
 P.O. Box 5800\\
@@ -173,6 +173,7 @@ and the Internet.
 
 \begin{figure}
   \centering
+  \sticky{Make this.}
   (Data~Collection) $\rightarrow$ (Entity~Extraction)
   (Event~Similarity~Calculation) (Semantic~Analysis) $\rightarrow$
   (Database)
@@ -364,6 +365,7 @@ these graphs is vital for detecting threats.
 
 \begin{figure}
   \centering
+  \sticky{Make this.}
   In a loop \\
   (Hypothesize) $\rightarrow$ (Query) $\rightarrow$ (Investigate)
   $\rightarrow$ (Conjecture) $\rightarrow$ (Hypothesize)
@@ -708,6 +710,7 @@ method of layout, forces are applied to vertices so that they are pushed in
 the direction of its neighbors.
 
 \begin{figure}
+  \sticky{Make this.}
   \centering
   \fbox{A simple 4 node ``star'' graph.}
   \fbox{The same vertices with forces.}
@@ -743,6 +746,7 @@ individually for each vertex, the fast layout algorithm samples the vector
 field and computes it everywhere.
 
 \begin{figure}
+  \sticky{Make this.}
   \centering
   A small grid showing the kernel for repulsive forces.
   \caption{Repulsive force kernel.}
@@ -757,6 +761,7 @@ vertex point away from the vertex with decreasing magnitude, as
 demonstrated in Figure~\ref{fig:SplatKernel}.
 
 \begin{figure}
+  \sticky{Make this.}
   \centering
   \fbox{One splat} \fbox{Two splats} \fbox{All splats}
   \caption{Splatting kernels to get a vector field.}
@@ -1130,6 +1135,87 @@ and allows more detailed inspection of topological relationship.
 
 \section{Edge Accumulation}
 \label{sec:EdgeAccumulation}
+
+\begin{figure}
+  \centering
+  \sticky{A nice ball and stick drawing of a simple graph.}
+  \caption{Ball and stick drawing of a simple graph.}
+  \label{fig:BallAndStick}
+\end{figure}
+
+An obvious but effective way to represent graphs in a visualization is to
+use a \keyterm{ball and stick}\index{ball~and~stick} drawing.  This simply
+means that vertices are represented as balls and edges are represented as
+sticks connecting them as shown in Figure~\ref{fig:BallAndStick}.  We have
+also seen examples of this type of drawing elsewhere in this document.
+
+\begin{figure}
+  \centering
+  \sticky{A larger graph with balls as points and sticks as lines.}
+  \caption{Ball and stick drawing of a larger graph.}
+  \label{fig:BallAndStickLarger}
+\end{figure}
+
+As the graph drawn becomes bigger, the size of the balls and sticks must
+become smaller to make them distinct.  This is typical of any ``zoom out''
+operation.  With even a moderate sized graph, the balls and sticks become
+the width of a pixel as shown in Figure~\ref{fig:BallAndStickLarger}.
+
+\begin{figure}
+  \centering
+  \sticky{Enron data set, no blending.}
+  \caption{A completely saturated graph drawing.}
+  \label{fig:EnronNoBlend}
+\end{figure}
+
+As the graph we draw becomes even larger, the display quickly becomes
+saturated.  In Figure~\ref{fig:EnronNoBlend} we see a drawing of a graph
+built from the Enron email database\lcite{Klimt04} containing
+\sticky{Vertices} vertices and \sticky{Edges} edges.  This images is
+completely saturated with edge data.  We have reached the limit of our
+display and the amount of information we get from edges is reduced to zero.
+
+A simple way to get around this problem is to throw away the edges from the
+drawing and draw only the vertices.  This is often called a
+\keytermidx{galaxy} drawing so named because the plot of the vertices
+resembles the plotting of stars in a map of a galaxy.  In this type of
+drawing we have to glean edge information from the positions of the
+vertices, which, if the layout is done properly, will show high areas of
+connectivity.
+
+\subsection{Pixel Blending}
+
+All is not lost.  There exist \keytermidx{blending} techniques is computer
+graphics that make it possible to represent effects from features that are
+smaller than a pixel.  The basic idea for the technique is to add an
+\keytermidx{alpha} parameter to the color that defines the fraction of the
+pixel covered.  Elements smaller than a pixel will have an alpha parameter
+less than one.  Porter and Duff\scite{Porter84} provide an algebra for
+combining colors with the alpha parameter.
+
+\begin{figure}
+  \centering
+  \sticky{Enron data set, pixel blending.}
+  \caption[Graph with pixel level blending.]{The same graph as
+    Figure~\ref{fig:EnronNoBlend} drawn with sub-pixel elements.}
+  \label{fig:EnronPixelBlend}
+\end{figure}
+
+So we can effectively lower the width of the elements below the width of
+the image pixels by reducing the alpha parameter.  Massive graphs that
+require very small alpha values can cause precision problems when
+accumulating the colors, but circumnavigating this problem results in an
+image like the one in Figure~\ref{fig:EnronPixelBlend}.
+
+Employing the blending technique clearly makes the edge information more
+visible.  We can make out areas of high versus low density of edges, and if
+we look very carefully we can make out groups of edges that connect
+clusters far away.  The image is not perfect, however.  There is still
+quite a bit of clutter in the graph.  Lots of dissimilar edges are
+accumulating together to form unimportant clumps in the graph.
+Furthermore, bundles of edges are difficult to spot and trace.
+
+\subsection{Edge Similarity}
 
 \section{Landscape View}
 \label{sec:LandscapeView}
