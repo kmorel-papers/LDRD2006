@@ -10,6 +10,7 @@
 \usepackage{subfigure}
 \usepackage{ifthen}
 \usepackage{xspace}
+\usepackage{clrscode}
 \usepackage{hyperref}
 
 %-----------------------------------------------------------------------------
@@ -1216,6 +1217,134 @@ accumulating together to form unimportant clumps in the graph.
 Furthermore, bundles of edges are difficult to spot and trace.
 
 \subsection{Edge Similarity}
+
+\begin{figure}
+  \centering
+  \fbox{Crossing perpendicular bisectors} \fbox{Crossing near parallel}
+  \fbox{Close to parallel, non-intersecting lines} \fbox{Parallel Lines}
+  \caption{Blending contribution from edge pairs.}
+  \label{fig:BlendingContributions}
+\end{figure}
+
+The problem with the blending operation is that the per-pixel computation
+is not indicative of the similarity of nearby edges.  As is demonstrated in
+Figure~\ref{fig:BlendingContributions}, a set of dissimilar edges can have
+as much or more contribution as a pair of edges that are location-wise
+nearly identical.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=4in]{images/EdgeAccEnronEdgeFrequency}
+  \caption[Graph with edge similarity accumulation.]{The same graph as
+    Figures~\ref{fig:EnronNoBlend} and \ref{fig:EnronPixelBlend} drawn with
+    edges weighted based on how similar they are to other edges.}
+  \label{fig:EnronEdgeFrequency}
+\end{figure}
+
+We really want the contribution of the pair of edges to be based on the
+similarities of the entire line segment including location, length, and
+angle.  When we do that bundles of edges stand out much more whereas edges
+with random orientations are completely hidden regardless of overlap as
+shown in Figure~\ref{fig:EnronEdgeFrequency}.  The remainder of this
+section will describe the outline for determining all of the edge
+similarities.
+
+There are several ways to parameterize a line segment.  We use the
+segment's centroid, length, and orientation angle as the parameters.  The
+main reason for this parameterization is that the centroid gives an easy
+way to compare the spatial distance of two segments.  In particular, for
+two edges to be considered ``similar,'' their centroids must be nearby.
+Thus, when we have a segment with which we are looking for similar
+segments, we need only look in a small radius around the centroid.  This
+provides a very effective and important pruning of the number of
+comparisons we need to perform.
+
+\subsection{Sweep Algorithm}
+
+\begin{figure}
+  \centering
+  \sticky{Image of a line sweeping a graph.}
+  \caption{A sweep line on a graph.}
+  \label{fig:SweepLine}
+\end{figure}
+
+The fastest way we have found to determine the similarities of all of the
+edges (or rather, the line segments representing the edges) of a graph, is
+to use a \keyterm{sweep line}\index{sweep~line}.  As the name implies, the
+algorithm will sweep a line across the graph as demonstrated in
+Figure~\ref{fig:SweepLine}.  As the line sweeps, it will maintain an
+\keyterm{active line segments list}\index{active~lines~list} that contains
+candidates of segments similar to those near the sweep line.
+
+As the sweep line encounters a new segment centroid, it first checks to see
+what other segments in the active list are similar to it.  The
+``frequency'' parameter of all these similar segments is updated.  The new
+segment is then added to the active lines list.  When the sweep line passes
+past the point where a segment in the active list may be considered similar
+to one centered on the sweep line, it is removed from the active lines
+list.
+
+\begin{figure}
+  \centering
+  \begin{codebox}
+    \Procname{\proc{$LineFrequency2D(\id{Lines})$}}
+    \li Initialize \id{Frequencies}
+      (either to the weights if using them or 1 if not)
+    \li Initialize \id{EventQueue} to empty
+    \li Initialize \id{ActiveLines} to empty
+    \li \For each \id{line} in \id{Lines}
+    \li \Do Insert \const{Add} event for \id{line} in \id{EventQueue} at
+      \id{line}'s centroid \End
+    \li \While \id{EventQueue} has events
+    \zi \Do
+      \li Pop \id{Event} off of \id{EventQueue}
+      \li \If \id{Event} is \const{Add}
+      \zi \Then
+        \li $\id{line1} \leftarrow$ line associated with \id{Event}
+        \li \For each \id{line2} in \id{ActiveLines} that is ``similar'' to \id{line1}
+        \label{ActiveLines_find}
+        \li \Do Update \id{Frequencies} for \id{line1} and \id{line2} \End
+        \li Insert \id{line1} in \id{ActiveLines}
+        \li Insert \const{Remove} event for \id{line1} in {EventQueue}
+        \zi \> at distance where \id{line1} cannot be similar.
+      \zi \Else \Comment \id{Event} is \const{Remove}
+        \li Remove line associated with \id{Event} from \id{ActiveLines}
+        \label{ActiveLines_remove}
+      \End
+    \End
+    \li \Return \id{Frequencies}
+  \end{codebox}
+  \caption{A sweep algorithm for computing the line frequency in the
+    plane.}
+  \label{fig:SweepAlgorithm}
+\end{figure}
+
+The sweep algorithm is shown in Figure~\ref{fig:SweepAlgorithm}.  Although
+conceptually the sweep line moves continuously over the graph, we are
+really only concerned when the line hits ``events'' at certain discrete
+positions.  Thus, the algorithm controls the sweep plane with an event
+queue.
+
+Although not demonstrated in the pseudocode of
+Figure~\ref{fig:SweepAlgorithm}, it is important that the \id{ActiveLines}
+list be implemented as a search tree or some other search structure that
+can be iterated over.  This is important so that when finding all of the
+segments similar to the new one (line~\ref{ActiveLines_find}), we can
+iterate over only those segments with a centroid near the new segment's
+centroid.
+
+Another speed benefit can be obtained by implementing \id{EventQueue} as
+two separate search structures: one for the \const{Add} events and one for
+the \const{Remove} events.  The \const{Add} event queue is filled at the
+beginning of the algorithm.  It can be most efficiently implemented as a
+simple list of segments, sorted by the location of the centroid.
+
+The \const{Remove} event queue will have events added and removed
+throughout the algorithm.  This queue must be implemented as an ordered
+search structure.  Inserting and removing events will be much faster when
+there is less items in the queue.  Thus, not having the \const{Add} events,
+for which there will be more of throughout the algorithm than the
+\const{Remove} events, will significantly save on the running time.
 
 \section{Landscape View}
 \label{sec:LandscapeView}
