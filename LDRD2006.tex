@@ -1521,33 +1521,33 @@ constructed from the most common words.
 \chapter{Future Work}
 \label{chap:FutureWork}
 
+This LDRD project has successfully laid the groundwork for a scalable,
+parallel framework that handles massive graph visualization on distributed
+memory computers.  We have demonstrated the ability to run an interactive
+parallel visualization session where we load and visualize a large graph.
+Furthermore, this work is integrated with \titan, which lowers the barrier
+to leveraging this work in other projects.
 
-%% \chapter{Junk}
+We have already begun to integrate some of this work in the \threatview
+application.  In fact, it was with this application that we were able to
+demonstrate the parallel graph visualization.  As we move forward, we would
+like to integrate more of these techniques into the \threatview application
+and the ParaView\index{ParaView} framework it sits on.  This step requires
+the completion of the parallelism in some algorithms and the further
+integration of these parallel components.
 
-%% \begin{table}[ht]
-%%   \centering
-%%   \caption[Short Title]{Full caption}
-%%   \bigskip
+Deployment also requires a substantial amount of code hardening.  As simple
+as we try to make integrating components into software, nothing can replace
+the testing and debugging required to make components production ready.
+This hardening includes making \threatview ready to function in
+client-server mode.  Although we have demonstrated that running in
+client-server mode is possible, further testing needs to be done.
 
-%%   \begin{tabular}{|l|c|l|c|}
-%%   \end{tabular}
-%%   \label{tab:1}
-%% \end{table}
-
-%% \begin{figure}[ht]
-%%   \centering
-%%   \subfigure[Short title]{
-%%     \label{fig:sub:1}
-%% %    \includegraphics[keepaspectratio=true, width= in]{filename}
-%%   }
-%%   \subfigure[Short title]{
-%%     \label{fig:sub:2}
-%% %    \includegraphics[keepaspectratio=true, width= in]{filename}
-%%   }
-%%   \caption{Full caption.}
-%%   \label{fig:1}
-%% \end{figure}
-
+Finally, we want to use this work to springboard Sandia into a role of
+leadership for scalable analytics.  We have laid the foundation and built
+the tools needed to perform scalable information visualization like no one
+else.  From here we need to assert our worldwide presence with
+publications, self promotion, and community involvement.
 
 
 % ---------------------------------------------------------------------- %
@@ -1575,20 +1575,23 @@ constructed from the most common words.
 \begin{SANDdistribution}[NM]% or [CA]
   % \SANDdistCRADA	% If this report is about CRADA work
   % \SANDdistPatent	% If this report has a Patent Caution or Patent Interest
-  % \SANDdistLDRD	% If this report is about LDRD work
+  \SANDdistLDRD	% If this report is about LDRD work
 
   % External Address Format: {num copies}{Address}
-  \SANDdistExternal{}{}
+  %\SANDdistExternal{}{}
   \bigskip
 
   % The following MUST BE between the external and internal distributions!
   % \SANDdistClassified % If this report is classified
 
   % Internal Address Format: {num copies}{Mail stop}{Name}{Org}
-  \SANDdistInternal{}{}{}{}
+  \SANDdistInternal{4}{1323}{Moreland, Kenneth}{1424}
+  \SANDdistInternal{1}{1209}{Rahal, Nabeel}{5925}
+  \SANDdistInternal{1}{1323}{Wylie, Brian}{1424}
+  \SANDdistInternal{1}{1323}{Rogers, David H.}{1424}
 
   % Mail Channel Address Format: {num copies}{Mail Channel}{Name}{Org}
-  \SANDdistInternalM{}{}{}{}
+  %\SANDdistInternalM{}{}{}{}
 \end{SANDdistribution}
 
 
