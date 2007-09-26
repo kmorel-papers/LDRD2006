@@ -24,6 +24,7 @@ SET(images
   images/EdgeAccEnronNoBlend.png
   images/EdgeAccEnronPixelBlend.png
   images/EdgeAccEnronEdgeFrequency.png
+  images/Landscape.png
   )
 
 ADD_LATEX_DOCUMENT(LDRD2006.tex

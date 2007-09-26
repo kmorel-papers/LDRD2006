@@ -281,7 +281,7 @@ of the entities.  The most common layout algorithms are
 vertices by minimizing the energy caused by attractive and repulsive forces
 defined by the graph structure.  The time to solve this problem completely
 grows quadratically with respect to the number of graph nodes.  Good
-approximations with better running times exist~\lcite{Hachul04}, but they
+approximations with better running times exist\lcite{Hachul04}, but they
 are difficult to parallelize efficiently and still have a greater than
 linear running time.
 
@@ -851,7 +851,7 @@ our explanation there.
 The G-Space starts with a technique we call Low Dimensional Embedding
 (LDE).  Clearly, LDE is a play on the term HDE (High Dimensional Embedding)
 and we adopted it in homage of the work done by Harel and
-Koren~\scite{Harel02}.  When we started our work, we were not yet familiar
+Koren\scite{Harel02}.  When we started our work, we were not yet familiar
 with HDE and were only interested in two dimensional embeddings. Our work
 was motivated by the following use case: given a database containing a
 large social network, a user wishes to see the
@@ -1348,6 +1348,57 @@ for which there will be more of throughout the algorithm than the
 
 \section{Landscape View}
 \label{sec:LandscapeView}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=5in]{images/Landscape}
+  \caption[Example of landscape view]{An example of a landscape graph view
+    (right) with the corresponding ball and stick view on the left.}
+  \label{fig:LandscapeView}
+\end{figure}
+
+A \keyterm{landscape view}\index{landscape~view}, demonstrated in
+Figure~\ref{fig:LandscapeView}, is an alternative method for drawing
+graphs.  In this method of graph visualization, a terrain is used as a
+metaphor for the density of the graph with peaks corresponding to dense
+vertex clusters and valleys corresponding to empty portions of the graph.
+As the user zooms in and out, the landscape changes to show more or less
+detail.  Landscape view is currently used in several serial visualization
+tools\lcite{Thomas99,Boyack01}.
+
+To make the landscape, we first compute a field based on the density of the
+vertices.  To make this density field continuous, we allow the vertices to
+effect the density in some finite space around it that is determined by the
+current zoom level.  We compute this density field on a sampled 2D grid.
+We use the same fast splatting\index{fast~splatting} method that is part of
+the fast layout algorithm (see the corresponding section starting on
+page~\pageref{sec:Layout:FastLayout}).
+
+With the 2D mesh containing the density field computed, we perturb the mesh
+in the Z direction proportional to the density value there.  We also color
+each point based on the density value (and, equivocally, the height) for
+further cues on the density.  This geometry is then sent to graphics
+hardware for the appropriate filling and shading.  In the example in
+Figure~\ref{fig:LandscapeView}, we have also added contour lines.  Note
+that this all must happen in a fraction of a second as the landscape needs
+to be recalculated as the user changes the viewpoint.
+
+Implementing landscape generation in parallel is straightforward.  We
+assume that each process has some partition of the graph (which is the
+point).  Each process independently computes the density field of its local
+partition of vertices (using the fast splatting method).  As the density
+fields are computed, we need to make sure that any \keyterm{ghost
+vertices}\index{ghost~vertices}, vertices that are replicated on other
+processes, are removed.  We do not want any vertices counted multiple
+times.
+
+The partial density fields can be combined by simply adding corresponding
+mesh values together.  This can be done with a simple reduce operation
+available with MPI.  Once the density fields are combined, the resulting
+vector field, which is independent of problem size, can be further
+transformed in the serial manner described previously.  The resulting
+geometry can also be sent from parallel server to client for local
+rendering and display.
 
 \section{Peak Identification and Labeling}
 \label{sec:PeakIdentificationAndLabeling}
