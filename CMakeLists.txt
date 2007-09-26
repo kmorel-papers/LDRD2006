@@ -21,6 +21,9 @@ SET(images
   images/GSpaceBundleMap.pdf
   images/GSpaceBundlingInsets.png
   images/GSpaceComparison.png
+  images/EdgeAccEnronNoBlend.png
+  images/EdgeAccEnronPixelBlend.png
+  images/EdgeAccEnronEdgeFrequency.png
   )
 
 ADD_LATEX_DOCUMENT(LDRD2006.tex
