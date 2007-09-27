@@ -174,12 +174,7 @@ and the Internet.
 
 \begin{figure}
   \centering
-  \sticky{Make this.}
-  (Data~Collection) $\rightarrow$ (Entity~Extraction)
-  (Event~Similarity~Calculation) (Semantic~Analysis) $\rightarrow$
-  (Database)
-  \\
-  See the original proposal slides for the basic idea.
+  \includegraphics{images/GraphExtraction}
   \caption{Graph extraction from raw data.}
   \label{fig:GraphExtraction}
 \end{figure}
@@ -366,12 +361,7 @@ these graphs is vital for detecting threats.
 
 \begin{figure}
   \centering
-  \sticky{Make this.}
-  In a loop \\
-  (Hypothesize) $\rightarrow$ (Query) $\rightarrow$ (Investigate)
-  $\rightarrow$ (Conjecture) $\rightarrow$ (Hypothesize)
-  \\
-  Maybe no conjecture part.
+  \includegraphics{images/ThreatInvestigationCycle}
   \caption{Threat Investigation Cycle.}
   \label{fig:ThreatInvestigationCycle}
 \end{figure}
@@ -711,10 +701,8 @@ method of layout, forces are applied to vertices so that they are pushed in
 the direction of its neighbors.
 
 \begin{figure}
-  \sticky{Make this.}
   \centering
-  \fbox{A simple 4 node ``star'' graph.}
-  \fbox{The same vertices with forces.}
+  \includegraphics{images/GraphForces}
   \caption[Forces on a simple graph.]{A simple graph and the forces applied
     to it whose minimization yields an appropriate layout.}
   \label{fig:GraphForces}
@@ -747,9 +735,8 @@ individually for each vertex, the fast layout algorithm samples the vector
 field and computes it everywhere.
 
 \begin{figure}
-  \sticky{Make this.}
   \centering
-  A small grid showing the kernel for repulsive forces.
+  \includegraphics{images/SplatKernel}
   \caption{Repulsive force kernel.}
   \label{fig:SplatKernel}
 \end{figure}
@@ -762,9 +749,8 @@ vertex point away from the vertex with decreasing magnitude, as
 demonstrated in Figure~\ref{fig:SplatKernel}.
 
 \begin{figure}
-  \sticky{Make this.}
   \centering
-  \fbox{One splat} \fbox{Two splats} \fbox{All splats}
+  \includegraphics{images/SplatVectorField}
   \caption{Splatting kernels to get a vector field.}
   \label{fig:Splatting}
 \end{figure}
@@ -1139,7 +1125,7 @@ and allows more detailed inspection of topological relationship.
 
 \begin{figure}
   \centering
-  \sticky{A nice ball and stick drawing of a simple graph.}
+  \includegraphics[width=2.5in]{images/BallAndStick}
   \caption{Ball and stick drawing of a simple graph.}
   \label{fig:BallAndStick}
 \end{figure}
@@ -1152,7 +1138,7 @@ also seen examples of this type of drawing elsewhere in this document.
 
 \begin{figure}
   \centering
-  \sticky{A larger graph with balls as points and sticks as lines.}
+  \includegraphics[width=2.5in]{images/BallAndStickLarger}
   \caption{Ball and stick drawing of a larger graph.}
   \label{fig:BallAndStickLarger}
 \end{figure}
@@ -1171,10 +1157,10 @@ the width of a pixel as shown in Figure~\ref{fig:BallAndStickLarger}.
 
 As the graph we draw becomes even larger, the display quickly becomes
 saturated.  In Figure~\ref{fig:EnronNoBlend} we see a drawing of a graph
-built from the Enron email database\lcite{Klimt04} containing
-\sticky{Vertices} vertices and \sticky{Edges} edges.  This images is
-completely saturated with edge data.  We have reached the limit of our
-display and the amount of information we get from edges is reduced to zero.
+built from the Enron email database\lcite{Klimt04} containing 75,539
+vertices and 322,638 edges.  This images is completely saturated with edge
+data.  We have reached the limit of our display and the amount of
+information we get from edges is reduced to zero.
 
 A simple way to get around this problem is to throw away the edges from the
 drawing and draw only the vertices.  This is often called a
@@ -1220,6 +1206,7 @@ Furthermore, bundles of edges are difficult to spot and trace.
 
 \begin{figure}
   \centering
+  \sticky{Make this.}
   \fbox{Crossing perpendicular bisectors} \fbox{Crossing near parallel}
   \fbox{Close to parallel, non-intersecting lines} \fbox{Parallel Lines}
   \caption{Blending contribution from edge pairs.}
