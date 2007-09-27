@@ -1246,8 +1246,9 @@ similarities of the entire line segment including location, length, and
 angle.  When we do that bundles of edges stand out much more whereas edges
 with random orientations are completely hidden regardless of overlap as
 shown in Figure~\ref{fig:EnronEdgeFrequency}.  The remainder of this
-section will describe the outline for determining all of the edge
-similarities.
+section will describe the algorithm for determining all of the
+\keyterm{edge frequencies}\index{edge~frequencies}, a weighted count for
+each edge of how many other edges have similar placement.
 
 There are several ways to parameterize a line segment.  We use the
 segment's centroid, length, and orientation angle as the parameters.  The
@@ -1345,6 +1346,27 @@ search structure.  Inserting and removing events will be much faster when
 there is less items in the queue.  Thus, not having the \const{Add} events,
 for which there will be more of throughout the algorithm than the
 \const{Remove} events, will significantly save on the running time.
+
+\subsection{Drawing the Frequent Edges}
+
+Once the edge frequency is determined drawing an image like in
+Figure~\ref{fig:EnronEdgeFrequency} is straightforward.  When drawing the
+edges, it is easy to shade the edges based on their frequencies.  Edges
+with high frequencies should stand out whereas edges with low frequencies
+should blend into the background.  The range of colors and the function of
+mapping frequency to highlighting (linear vs. logarithmic) depends on the
+graph.  A proper highlighting is up to user preference and experimentation.
+
+When drawing the edges, you also want the most frequent edges ``on top.''
+One way to arrange this is to order the edges from lowest to highest and
+use the \keyterm{painter's algorithm}\index{painter's~algorithm} to draw
+the lowest frequency edges first and cover them up with the higher
+frequency edges.  When using graphics hardware, an easier (and usually
+quicker) way to place the most frequent edges on top is to use a 3D
+orthographic projection, assign a depth value to the edges based on the
+frequency, and then let the graphs hardware's internal
+\keytermidx{z-buffer} hidden surface removal place the most frequent edges
+on top.
 
 \section{Parallel Landscape View}
 \label{sec:LandscapeView}
@@ -1589,6 +1611,9 @@ publications, self promotion, and community involvement.
   \SANDdistInternal{1}{1209}{Rahal, Nabeel}{5925}
   \SANDdistInternal{1}{1323}{Wylie, Brian}{1424}
   \SANDdistInternal{1}{1323}{Rogers, David H.}{1424}
+  \SANDdistInternal{1}{1323}{Shead, Timothy}{1424}
+  \SANDdistInternal{1}{1323}{Crossno, Patricia}{1424}
+  \SANDdistInternal{1}{1323}{Stanton, Eric}{1424}
 
   % Mail Channel Address Format: {num copies}{Mail Channel}{Name}{Org}
   %\SANDdistInternalM{}{}{}{}
