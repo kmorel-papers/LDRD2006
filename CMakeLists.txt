@@ -31,8 +31,11 @@ SET(images
   images/EdgeAccEnronNoBlend.png
   images/EdgeAccEnronPixelBlend.png
   images/EdgeAccEnronEdgeFrequency.png
+  images/EdgeAccBlendingContrib.pdf
+  images/EdgeAccSweepLine.pdf
   images/Landscape.png
   images/PeakLabels.png
+  images/PeakLabelFlow.pdf
   )
 
 ADD_LATEX_DOCUMENT(LDRD2006.tex

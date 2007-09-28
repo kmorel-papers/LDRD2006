@@ -115,8 +115,8 @@ Albuquerque, NM 87185-1323}
   visualization framework and scalable algorithms to make the framework
   usable to a practical application.  Both the frameworks and algorithms
   are designed to run on distributed parallel computers, which are already
-  available at Sandia.  Future work will integrate these features into the
-  \threatview application.
+  available at Sandia.  Some features are integrated into the \threatview
+  application and future work will integrate further parallel algorithms.
 \end{abstract}
 
 
@@ -750,7 +750,7 @@ demonstrated in Figure~\ref{fig:SplatKernel}.
 
 \begin{figure}
   \centering
-  \includegraphics{images/SplatVectorField}
+  \includegraphics[width=\textwidth]{images/SplatVectorField}
   \caption{Splatting kernels to get a vector field.}
   \label{fig:Splatting}
 \end{figure}
@@ -1093,7 +1093,7 @@ Chapter~\ref{sec:ParallelGraphVisualizationFramework:DataStructures}.
 
 \begin{figure}
   \centering
-  \includegraphics[width=5in]{images/GSpaceComparison}
+  \includegraphics[width=\textwidth]{images/GSpaceComparison}
   \caption[Correlation of the G-Space layout to force directed
     layout.]{Correlation of the G-Space layout to a traditional force
     directed layout.  Color matched circles represent similar sets of
@@ -1206,9 +1206,7 @@ Furthermore, bundles of edges are difficult to spot and trace.
 
 \begin{figure}
   \centering
-  \sticky{Make this.}
-  \fbox{Crossing perpendicular bisectors} \fbox{Crossing near parallel}
-  \fbox{Close to parallel, non-intersecting lines} \fbox{Parallel Lines}
+  \includegraphics{images/EdgeAccBlendingContrib}
   \caption{Blending contribution from edge pairs.}
   \label{fig:BlendingContributions}
 \end{figure}
@@ -1251,8 +1249,10 @@ comparisons we need to perform.
 
 \begin{figure}
   \centering
-  \sticky{Image of a line sweeping a graph.}
-  \caption{A sweep line on a graph.}
+  \includegraphics{images/EdgeAccSweepLine}
+  \caption[A sweep line on a graph.]{A sweep line on a graph.  As the sweep
+    line (red) passes over the graph, it maintains a list of ``active''
+    edges (green) that it uses to look for similar edges.}
   \label{fig:SweepLine}
 \end{figure}
 
@@ -1435,29 +1435,7 @@ vertices contributing to the peak.
 
 \begin{figure}
   \centering
-  \sticky{Make a nice graphic.  Use Peak Identification, Contributor
-    Identification, and Label Extraction for the process blocks rather than
-    VTK classes.}
-  \begin{verbatim}
-    [landscape height image]
-               |
-               v
-vtkPImagePeakIdentificationFilter
-               |
-          [peak points]    [parallel graph, ghost points removed]
-               |                  |      |
-               v                  v      |
-      vtkFindContributors <--- [kd-tree] |
-               |                         |
-  [peak points with contributor sets]    |
-               |                         |
-               |   +---------------------+
-               v   v
-      vtkPExtractLabels
-               |
-               v
-    [peak points with label field]
-  \end{verbatim}
+  \includegraphics{images/PeakLabelFlow}
   \caption{Flow for peak identification and labeling.}
   \label{fig:PeakLabelFlow}
 \end{figure}
