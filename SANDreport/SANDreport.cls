@@ -766,11 +766,9 @@
 	\ifthenelse{\boolean{distCA}}   {
 	    % Insert the standard CA distribution
 	    \ifthenelse{\boolean{distClassified}}   {
-		\SANDdistInternal{2}{9018}{Central Technical Files}{8944}
-		\SANDdistInternalM{2}{0501}{Technical Library}{4536}
+		\SANDdistInternalM{2}{0501}{Technical Library}{9536}
 	    }{
-		\SANDdistInternal{2}{9018}{Central Technical Files}{8944}
-		\SANDdistInternal{2}{0899}{Technical Library}{4536}
+		\SANDdistInternal{2}{0899}{Technical Library}{9536}
 	    }
 
 	    % If this report has a Patent Caution or Patent Interest
@@ -793,11 +791,9 @@
 	\ifthenelse{\boolean{distNM}}   {
 	    % Insert the standard NM distribution
 	    \ifthenelse{\boolean{distClassified}}   {
-		\SANDdistInternalM{2}{2497}{Central Technical Files}{8944}
-		\SANDdistInternal{2}{0899}{Technical Library}{4536}
+		\SANDdistInternal{2}{0899}{Technical Library}{9536}
 	    }{
-		\SANDdistInternal{2}{9018}{Central Technical Files}{8944}
-		\SANDdistInternal{2}{0899}{Technical Library}{4536}
+		\SANDdistInternal{2}{0899}{Technical Library}{9536}
 	    }
 
 	    % If this report has a Patent Caution or Patent Interest
